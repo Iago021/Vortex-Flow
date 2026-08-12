@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Entre em contato com a equipe do Vortex Flow." />
+    <title>Contato | Vortex Flow</title>
+    <link rel="stylesheet" href="../estilos/principal.css" />
+    <link rel="stylesheet" href="../estilos/responsivo.css" />
+    <script src="../scripts/principal.js" defer></script>
+  </head>
+  <body class="pagina_contato">
+    <a class="pular_conteudo" href="#conteudo">Ir para o conteúdo</a>
+    <header class="cabecalho">
+      <div class="cabecalho_conteudo">
+        <a class="logo" href="../index.html" aria-label="Vortex Flow - início"><span class="logo_simbolo" aria-hidden="true"></span><span class="logo_texto"><strong>VORTEX</strong><small>FLOW</small></span></a>
+        <button class="botao_menu" type="button" aria-label="Abrir menu" aria-controls="menu_principal" aria-expanded="false" data-botao-menu><span></span></button>
+        <nav class="navegacao" id="menu_principal" aria-label="Menu principal" data-navegacao>
+          <a class="navegacao_link" href="planos.html">Planos</a>
+          <a class="navegacao_link" href="sobre_nos.html">Sobre</a>
+          <a class="navegacao_link ativo" href="contato.html" aria-current="page">Contato</a>
+          <a class="botao botao_entrar" href="login.html">Entrar</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="contato_principal" id="conteudo">
+      <div class="conteiner contato_grade">
+        <section class="contato_texto">
+          <h1 class="titulo_secao contato_titulo"><strong>CON</strong>TATO</h1>
+          <p>Tem alguma dúvida, feedback ou encontrou algum problema no site? Nossa equipe está pronta para atender você.</p>
+
+          <div class="endereco">
+            <h2>Ende<strong>reço:</strong></h2>
+            <address>Avenida das Palmeiras, 560<br />Vila Nova, Mogi Guaçu – SP<br />CEP 13847-000</address>
+          </div>
+
+          <div class="contato_atalhos">
+            <a class="contato_atalho" href="#" data-mensagem="O telefone oficial ainda precisa ser informado."><span aria-hidden="true">☎</span><div><strong>Telefone</strong><small>(19) 0000-0000</small></div></a>
+            <a class="contato_atalho" href="#" data-mensagem="O Instagram oficial ainda precisa ser informado."><span aria-hidden="true">◎</span><div><strong>Instagram</strong><small>@vortexflow</small></div></a>
+          </div>
+        </section>
+
+        <section class="contato_formulario" aria-labelledby="titulo_formulario">
+          <h2 id="titulo_formulario">Nos envie um e-mail.</h2>
+          <form class="cartao formulario_cartao" data-formulario data-sucesso="Mensagem validada. O envio será ativado quando o e-mail oficial for conectado.">
+            <div class="campo"><label for="email_contato">E-mail</label><input id="email_contato" name="email" type="email" autocomplete="email" placeholder="Digite seu e-mail" required /></div>
+            <div class="campo"><label for="assunto">Assunto</label><select id="assunto" name="assunto" required><option value="">Selecione o assunto</option><option>Dúvida</option><option>Feedback</option><option>Problema no site</option><option>Planos</option><option>Outro</option></select></div>
+            <div class="campo"><label for="mensagem">Feedback, dúvida ou problema</label><textarea id="mensagem" name="mensagem" minlength="10" placeholder="Digite sua mensagem" required></textarea></div>
+            <button class="botao botao_laranja" type="submit">Enviar mensagem</button>
+            <p class="email_contato">E-mail provisório: contato@vortexflow.com.br</p>
+          </form>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
