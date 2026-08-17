@@ -65,15 +65,17 @@
   if (menuApp) {
     var paginaAtual = location.pathname.split("/").pop() || "painel.html";
     var itensMenu = [
-      ["painel.html", "dashboard", "Dashboard"], ["produtos.html", "produtos", "Produtos"],
-      ["ingredientes.html", "ingredientes", "Ingredientes"], ["estoque.html", "estoque", "Controle de Estoque"],
-      ["producao.html", "producao", "Produção"], ["vendas.html", "vendas", "Vendas"],
-      ["perdas.html", "perdas", "Desperdícios"], ["financeiro.html", "financeiro", "Financeiro"],
-      ["calendario.html", "calendario", "Calendário"], ["ia_especialista.html", "ia", "IA Especialista"],
-      ["graficos.html", "graficos", "Relatórios"]
+      ["painel.html", "dashboard", "Visão Geral"],
+      ["produtos.html", "estoque", "Estoque"],
+      ["receitas.html", "relatorio", "Receitas"],
+      ["vendas.html", "vendas", "Vendas Diárias"],
+      ["perdas.html", "perdas", "Perdas"],
+      ["financeiro.html", "financeiro", "Financeiro"],
+      ["calendario.html", "calendario", "Calendário"],
+      ["ia_especialista.html", "ia", "IA Especialista"]
     ];
     menuApp.innerHTML = itensMenu.map(function (item) {
-      return '<a href="' + item[0] + '"' + (paginaAtual === item[0] || (paginaAtual === "receitas.html" && item[0] === "produtos.html") ? ' class="ativo"' : '') + ' title="' + item[2] + '"><span class="menu-icone" data-icon="' + item[1] + '"></span><span class="menu-rotulo">' + item[2] + '</span></a>';
+      return '<a href="' + item[0] + '"' + (paginaAtual === item[0] ? ' class="ativo"' : '') + ' title="' + item[2] + '"><span class="menu-icone" data-icon="' + item[1] + '"></span><span class="menu-rotulo">' + item[2] + '</span></a>';
     }).join("") + '<div class="menu-separador"></div><a class="menu-sair" href="../index.html" title="Sair"><span class="menu-icone" data-icon="sair"></span><span class="menu-rotulo">Sair</span></a>';
 
     var botaoBarra = document.querySelector(".barra-menu");
