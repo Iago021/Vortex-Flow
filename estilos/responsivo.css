@@ -87,3 +87,35 @@
   .menu-app a { min-width: 0; }
   .produto-detalhe-topo { align-items: flex-start; flex-direction: column; }
 }
+
+@media (max-width: 1180px) and (min-width: 701px) {
+  .app-layout { grid-template-columns: 82px 1fr; }
+  .barra-menu { justify-content: center; padding-inline: 0; }
+  .barra-menu span, .menu-app .menu-rotulo { display: none; }
+  .menu-app a { justify-content: center; padding-inline: 0; }
+  .dashboard-kpis { grid-template-columns: 1fr 1fr; }
+  .modulo-grade { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 900px) {
+  .dashboard-grade, .ia-layout { grid-template-columns: 1fr; }
+  .producao-colunas { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+  .menu-app { display: flex; overflow-x: auto; overflow-y: hidden; padding: 0; }
+  .menu-app a { min-width: 64px; padding: 0; }
+  .menu-app .menu-rotulo, .menu-app .menu-separador, .menu-app a.menu-sair { display: none; }
+  .tema-alternar { right: 14px; bottom: 82px; }
+  .tema-alternar span { display: none; }
+  .dashboard-boas-vindas { align-items: flex-start; flex-direction: column; }
+  .dashboard-kpis, .modulo-grade, .acoes-rapidas { grid-template-columns: 1fr; }
+  .dashboard-grade { display: block; }
+  .dashboard-card + .dashboard-card { margin-top: 16px; }
+  .pagina-ferramentas { align-items: stretch; flex-direction: column; }
+  .busca-visual { width: 100%; min-width: 0; }
+  .producao-colunas, .ia-layout { display: block; }
+  .ia-lateral { margin-bottom: 16px; }
+  .mensagem { max-width: 92%; }
+  .chat-form { grid-template-columns: 1fr; }
+}
