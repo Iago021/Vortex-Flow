@@ -18,6 +18,8 @@
   .navegacao.aberta { max-height: calc(100vh - 82px); padding-block: 14px 20px; opacity: 1; visibility: visible; }
   .navegacao a { width: 100%; }
   .hero { min-height: calc(100vh - 82px); }
+  .recursos-grade { grid-template-columns: 1fr 1fr; }
+  .fluxo-grade { grid-template-columns: 1fr; }
   .beneficios, .sobre-grade { grid-template-columns: 1fr; }
   .beneficio { min-height: 110px; }
   .sobre-grade { gap: 70px; }
@@ -44,6 +46,13 @@
   .metricas { grid-template-columns: 1fr 1fr; }
   .rosca-wrap { grid-template-columns: 1fr; justify-items: center; }
   .beneficios { gap: 15px; }
+  .secao-publica { padding: 68px 0; }
+  .secao-cabecalho { margin-bottom: 34px; text-align: left; }
+  .recursos-grade { grid-template-columns: 1fr; }
+  .recurso-card { min-height: 0; padding: 23px; }
+  .fluxo-passos li { grid-template-columns: 52px 1fr; padding: 17px; }
+  .fluxo-passos li > span { width: 52px; height: 52px; }
+  .chamada-final-conteudo { align-items: flex-start; flex-direction: column; }
   .pagina-publica { padding: 55px 0; }
   .plano { padding: 32px 22px; }
   .contato-atalhos { flex-direction: column; }
@@ -109,6 +118,9 @@
   .tema-alternar { right: 14px; bottom: 82px; }
   .tema-alternar span { display: none; }
   .dashboard-boas-vindas { align-items: flex-start; flex-direction: column; }
+  .perfil-area, .usuario-chip { width: 100%; }
+  .perfil-seta { margin-left: auto; }
+  .perfil-menu { width: 100%; }
   .dashboard-kpis, .modulo-grade, .acoes-rapidas { grid-template-columns: 1fr; }
   .dashboard-grade { display: block; }
   .dashboard-card + .dashboard-card { margin-top: 16px; }
