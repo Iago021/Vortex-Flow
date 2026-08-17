@@ -65,22 +65,66 @@
   if (menuApp) {
     var paginaAtual = location.pathname.split("/").pop() || "painel.html";
     var itensMenu = [
-      ["painel.html", "dashboard", "Visão Geral"],
-      ["produtos.html", "estoque", "Estoque"],
-      ["receitas.html", "relatorio", "Receitas"],
-      ["vendas.html", "vendas", "Vendas Diárias"],
-      ["perdas.html", "perdas", "Perdas"],
-      ["financeiro.html", "financeiro", "Financeiro"],
-      ["calendario.html", "calendario", "Calendário"],
-      ["ia_especialista.html", "ia", "IA Especialista"]
+      { href: "painel.html", icone: "dashboard", rotulo: "Visão Geral" },
+      { id: "estoque", icone: "estoque", rotulo: "Estoque", filhos: [
+        { href: "produtos.html", rotulo: "Itens e preços" },
+        { href: "receitas.html", rotulo: "Receitas" }
+      ] },
+      { id: "operacao", icone: "vendas", rotulo: "Operação", filhos: [
+        { href: "vendas.html", rotulo: "Vendas diárias" },
+        { href: "perdas.html", rotulo: "Perdas" }
+      ] },
+      { id: "gestao", icone: "financeiro", rotulo: "Gestão", filhos: [
+        { href: "financeiro.html", rotulo: "Financeiro" },
+        { href: "calendario.html", rotulo: "Calendário" }
+      ] },
+      { href: "ia_especialista.html", icone: "ia", rotulo: "IA Especialista" }
     ];
     menuApp.innerHTML = itensMenu.map(function (item) {
-      return '<a href="' + item[0] + '"' + (paginaAtual === item[0] ? ' class="ativo"' : '') + ' title="' + item[2] + '"><span class="menu-icone" data-icon="' + item[1] + '"></span><span class="menu-rotulo">' + item[2] + '</span></a>';
+      if (item.href) {
+        return '<a href="' + item.href + '"' + (paginaAtual === item.href ? ' class="ativo"' : '') + ' title="' + item.rotulo + '"><span class="menu-icone" data-icon="' + item.icone + '"></span><span class="menu-rotulo">' + item.rotulo + '</span></a>';
+      }
+      var grupoAtivo = item.filhos.some(function (filho) { return filho.href === paginaAtual; });
+      var abrirGrupo = grupoAtivo && window.innerWidth > 700;
+      return '<div class="menu-grupo' + (abrirGrupo ? ' aberto' : '') + '" data-menu-grupo="' + item.id + '">' +
+        '<button class="menu-pai' + (grupoAtivo ? ' ativo' : '') + '" type="button" aria-expanded="' + String(abrirGrupo) + '" title="' + item.rotulo + '" data-menu-pai>' +
+        '<span class="menu-icone" data-icon="' + item.icone + '"></span><span class="menu-rotulo">' + item.rotulo + '</span><span class="menu-seta" data-icon="chevron"></span></button>' +
+        '<div class="menu-submenu">' + item.filhos.map(function (filho) {
+          return '<a href="' + filho.href + '"' + (paginaAtual === filho.href ? ' class="ativo"' : '') + '><span class="submenu-ponto"></span><span class="menu-rotulo">' + filho.rotulo + '</span></a>';
+        }).join("") + '</div></div>';
     }).join("") + '<div class="menu-separador"></div><a class="menu-sair" href="../index.html" title="Sair"><span class="menu-icone" data-icon="sair"></span><span class="menu-rotulo">Sair</span></a>';
+
+    menuApp.querySelectorAll("[data-menu-pai]").forEach(function (botaoPai) {
+      botaoPai.addEventListener("click", function () {
+        if (document.body.classList.contains("menu-recolhido")) {
+          document.body.classList.remove("menu-recolhido");
+          localStorage.setItem("kemet_menu_recolhido", "0");
+        }
+        var grupo = botaoPai.closest(".menu-grupo");
+        var abrir = !grupo.classList.contains("aberto");
+        menuApp.querySelectorAll(".menu-grupo.aberto").forEach(function (outroGrupo) {
+          if (outroGrupo !== grupo) {
+            outroGrupo.classList.remove("aberto");
+            var outroBotao = outroGrupo.querySelector("[data-menu-pai]");
+            if (outroBotao) outroBotao.setAttribute("aria-expanded", "false");
+          }
+        });
+        grupo.classList.toggle("aberto", abrir);
+        botaoPai.setAttribute("aria-expanded", String(abrir));
+      });
+    });
+    document.addEventListener("keydown", function (evento) {
+      if (evento.key !== "Escape") return;
+      menuApp.querySelectorAll(".menu-grupo.aberto").forEach(function (grupo) {
+        grupo.classList.remove("aberto");
+        var botao = grupo.querySelector("[data-menu-pai]");
+        if (botao) botao.setAttribute("aria-expanded", "false");
+      });
+    });
 
     var botaoBarra = document.querySelector(".barra-menu");
     if (botaoBarra) {
-      botaoBarra.innerHTML = '<span data-icon="menu"></span><span>Menu</span>';
+      botaoBarra.innerHTML = '<span data-icon="menu"></span><span class="barra-menu-rotulo">Menu</span>';
       botaoBarra.addEventListener("click", function () {
         document.body.classList.toggle("menu-recolhido");
         localStorage.setItem("kemet_menu_recolhido", document.body.classList.contains("menu-recolhido") ? "1" : "0");
@@ -117,6 +161,11 @@
   var iconeProdutoDetalhe = document.querySelector("[data-produto-icone]");
   if (iconeProdutoDetalhe) iconeProdutoDetalhe.dataset.icon = "bolo";
   renderizarIcones(document);
+
+  var graficoGeral = document.querySelector(".desempenho-card .linha-dashboard");
+  if (graficoGeral && !graficoGeral.querySelector(".linha-perdas")) {
+    graficoGeral.insertAdjacentHTML("beforeend", '<path class="linha-perdas" d="M20 195C100 191 145 184 230 192s112-18 190-9 123-8 190-4 89 8 130 5"/><g class="grafico-pontos perdas"><circle cx="20" cy="195" r="4"><title>Perdas: R$ 42</title></circle><circle cx="140" cy="188" r="4"><title>Perdas: R$ 55</title></circle><circle cx="260" cy="192" r="4"><title>Perdas: R$ 47</title></circle><circle cx="380" cy="182" r="4"><title>Perdas: R$ 68</title></circle><circle cx="500" cy="185" r="4"><title>Perdas: R$ 61</title></circle><circle cx="620" cy="179" r="4"><title>Perdas: R$ 74</title></circle><circle cx="740" cy="184" r="4"><title>Perdas: R$ 63</title></circle></g>');
+  }
 
   var botaoMenu = document.querySelector("[data-menu-botao]");
   var menu = document.querySelector("[data-menu]");
@@ -266,7 +315,7 @@
     botao.addEventListener("click", function () {
       var mensagens = document.querySelector("[data-mensagens]");
       if (!mensagens) return;
-      mensagens.insertAdjacentHTML("beforeend", '<div class="mensagem usuario">' + botao.textContent.trim() + '</div><div class="mensagem ia">Analisando os dados demonstrativos: o bolo de chocolate lidera as vendas e a farinha está próxima do estoque mínimo. Esta é uma resposta visual do protótipo.</div>');
+      mensagens.insertAdjacentHTML("beforeend", '<div class="mensagem usuario">' + botao.textContent.trim() + '</div><div class="mensagem ia">Analisando os dados demonstrativos: o Bolo de Chocolate lidera as vendas, o Pavê está abaixo do estoque mínimo e o calendário sugere uma campanha para a próxima data comemorativa. Esta é uma resposta visual do protótipo.</div>');
       mensagens.lastElementChild.scrollIntoView({ behavior: "smooth" });
     });
   });

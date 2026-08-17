@@ -90,9 +90,16 @@
 
 @media (max-width: 1180px) and (min-width: 701px) {
   .app-layout { grid-template-columns: 82px 1fr; }
+  .barra-lateral, .menu-app { overflow: visible; }
   .barra-menu { justify-content: center; padding-inline: 0; }
-  .barra-menu span, .menu-app .menu-rotulo { display: none; }
+  .barra-menu-rotulo, .menu-app .menu-rotulo { display: none; }
   .menu-app a { justify-content: center; padding-inline: 0; }
+  .menu-grupo { position: relative; }
+  .menu-pai { justify-content: center; padding-inline: 0; }
+  .menu-pai .menu-seta { display: none; }
+  .menu-submenu { width: 205px; position: absolute; top: 0; left: 82px; z-index: 100; border: 1px solid #444; border-radius: 0 10px 10px 0; box-shadow: 14px 12px 30px rgba(0,0,0,.28); }
+  .menu-submenu a { justify-content: flex-start; padding: 8px 16px; }
+  .menu-submenu .menu-rotulo { display: inline; }
   .dashboard-kpis { grid-template-columns: 1fr 1fr; }
   .modulo-grade { grid-template-columns: 1fr 1fr; }
   .painel-kpis-6 { grid-template-columns: repeat(3, 1fr); }
@@ -114,9 +121,17 @@
 }
 
 @media (max-width: 700px) {
-  .menu-app { display: flex; overflow-x: auto; overflow-y: hidden; padding: 0; }
+  .barra-lateral { overflow: visible; }
+  .menu-app { display: flex; overflow-x: auto; overflow-y: visible; padding: 0; }
   .menu-app a { min-width: 64px; padding: 0; }
   .menu-app .menu-rotulo, .menu-app .menu-separador, .menu-app a.menu-sair { display: none; }
+  .menu-grupo { width: 64px; flex: 0 0 64px; }
+  .menu-pai { width: 64px; height: 68px; justify-content: center; padding: 0; }
+  .menu-pai .menu-seta { display: none; }
+  .menu-submenu { position: fixed; right: 12px; bottom: 76px; left: 12px; z-index: 180; grid-template-columns: 1fr 1fr; border: 1px solid #454545; border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,.38); }
+  .menu-grupo.aberto .menu-submenu { max-height: 130px; }
+  .menu-submenu a { min-width: 0; min-height: 50px; justify-content: flex-start; padding: 10px 13px; }
+  .menu-submenu .menu-rotulo { display: inline; }
   .tema-alternar { right: 14px; bottom: 82px; }
   .tema-alternar span { display: none; }
   .dashboard-boas-vindas { align-items: flex-start; flex-direction: column; }
@@ -139,4 +154,7 @@
   .ia-lateral { margin-bottom: 16px; }
   .mensagem { max-width: 92%; }
   .chat-form { grid-template-columns: 1fr; }
+  .grafico-painel { grid-template-columns: 38px minmax(0, 1fr); }
+  .grafico-resumo { grid-template-columns: 1fr; }
+  .evento-conteudo { padding-left: 11px; }
 }
