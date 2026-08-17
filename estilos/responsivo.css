@@ -1,306 +1,89 @@
-@media (max-width: 1450px) and (min-width: 1251px) {
-  .beneficios_inicio {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .beneficio_inicio:last-child {
-    grid-column: 1 / -1;
-  }
+@media (max-width: 1280px) {
+  .hero-grade { grid-template-columns: 1fr; padding-top: 35px; }
+  .hero-conteudo { max-width: 900px; margin: auto; }
+  .mini-dashboard { width: min(980px, 100%); margin: auto; }
+  .hero::after { width: 70%; }
+  .detalhes-estoque { grid-template-columns: 1fr; }
+  .produto-detalhe { border-right: 0; border-bottom: 1px solid #454545; }
+  .calendario-grade { grid-template-columns: repeat(3, 1fr); }
 }
-
-@media (max-width: 1250px) {
-  .inicio_grade {
-    grid-template-columns: 1fr;
-  }
-
-  .inicio_conteudo {
-    max-width: 850px;
-  }
-
-  .dashboard_demo {
-    width: min(900px, 100%);
-    margin: 0 auto;
-  }
-
-  .contato_grade {
-    gap: 45px;
-  }
-}
-
 @media (max-width: 980px) {
-  .cabecalho {
-    height: 82px;
-  }
-
-  .cabecalho_conteudo {
-    width: min(100% - 28px, var(--largura));
-  }
-
-  .cabecalho .logo_texto {
-    display: block;
-  }
-
-  .logo_simbolo {
-    width: 46px;
-    height: 46px;
-    flex-basis: 46px;
-  }
-
-  .botao_menu {
-    display: grid;
-  }
-
-  .navegacao {
-    position: fixed;
-    inset: 82px 0 auto;
-    max-height: 0;
-    overflow: hidden;
-    display: grid;
-    gap: 4px;
-    padding: 0 16px;
-    background: #fff;
-    box-shadow: 0 14px 24px rgba(0, 0, 0, 0.14);
-    opacity: 0;
-    visibility: hidden;
-    transition: max-height 200ms ease, padding 200ms ease, opacity 160ms ease;
-  }
-
-  .navegacao.aberta {
-    max-height: calc(100vh - 82px);
-    padding-block: 14px 20px;
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .navegacao_link,
-  .navegacao .botao {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .inicio,
-  .sobre_principal,
-  .planos_principal,
-  .contato_principal {
-    min-height: calc(100vh - 82px);
-  }
-
-  .beneficios_inicio,
-  .sobre_cartoes {
-    grid-template-columns: 1fr;
-  }
-
-  .sobre_cartoes {
-    gap: 120px;
-  }
-
-  .sobre_cartao {
-    min-height: 230px;
-  }
-
-  .planos_grade,
-  .contato_grade {
-    grid-template-columns: 1fr;
-  }
-
-  .planos_grade {
-    gap: 34px;
-  }
-
-  .plano > p {
-    min-height: auto;
-  }
-
-  .contato_texto > p {
-    margin-bottom: 34px;
-  }
-
-  .contato_atalhos {
-    margin-top: 38px;
-  }
+  .conteiner { width: min(var(--largura), calc(100% - 34px)); }
+  .cabecalho { height: 82px; }
+  .cabecalho-conteudo { width: calc(100% - 24px); }
+  .marca img { width: 92px; height: 62px; }
+  .marca-texto { display: none; }
+  .botao-menu { display: grid; place-items: center; }
+  .navegacao { position: fixed; inset: 82px 0 auto; max-height: 0; overflow: hidden; display: grid; gap: 4px; padding: 0 16px; background: #fff; box-shadow: 0 15px 25px rgba(0,0,0,.17); opacity: 0; visibility: hidden; transition: .22s ease; }
+  .navegacao.aberta { max-height: calc(100vh - 82px); padding-block: 14px 20px; opacity: 1; visibility: visible; }
+  .navegacao a { width: 100%; }
+  .hero { min-height: calc(100vh - 82px); }
+  .beneficios, .sobre-grade { grid-template-columns: 1fr; }
+  .beneficio { min-height: 110px; }
+  .sobre-grade { gap: 70px; }
+  .planos-grade, .contato-grade, .login-grade { grid-template-columns: 1fr; }
+  .planos-grade { gap: 60px; }
+  .login-grade { gap: 35px; }
+  .login-chamada { text-align: center; }
+  .app-layout { grid-template-columns: 72px 1fr; }
+  .app-principal { padding: 20px; }
+  .estoque-grade, .receitas-layout { grid-template-columns: 220px 1fr; }
+  .lista-produtos { padding-right: 12px; }
+  .produto-item { grid-template-columns: 46px 1fr; }
+  .produto-imagem { width: 44px; height: 44px; }
+  .receita-card, .vendas-grade, .perdas-graficos, .graficos-grade { grid-template-columns: 1fr; }
+  .vendas-grade { padding-top: 24px; }
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .calendario-grade { grid-template-columns: repeat(2, 1fr); }
 }
-
-@media (max-width: 760px) {
-  .conteiner {
-    width: min(var(--largura), calc(100% - 28px));
-  }
-
-  .marca_grande strong {
-    font-size: clamp(4.5rem, 21vw, 7rem);
-  }
-
-  .inicio h1 {
-    font-size: clamp(3rem, 14vw, 5rem);
-  }
-
-  .inicio_descricao {
-    text-align: left;
-  }
-
-  .inicio_acoes,
-  .metricas,
-  .graficos,
-  .cadastro_formulario {
-    grid-template-columns: 1fr;
-  }
-
-  .cadastro_acao {
-    grid-column: auto;
-    align-items: stretch;
-    flex-direction: column-reverse;
-  }
-
-  .cadastro_acao .botao {
-    width: 100%;
-  }
-
-  .login_chamada {
-    margin-bottom: 28px;
-  }
-
-  .login_chamada h1 {
-    font-size: clamp(3rem, 14vw, 5rem);
-  }
-
-  .login_cartao {
-    padding: 28px 24px;
-    border-radius: 32px;
-  }
-
-  .cadastro_titulo strong {
-    padding-inline: 16px;
-  }
-
-  .cadastro_coluna {
-    padding: 28px 22px;
-  }
-
-  .sobre_manifesto {
-    padding: 24px;
-  }
-
-  .plano {
-    padding: 28px 24px 32px;
-  }
-
-  .contato_atalhos {
-    grid-template-columns: 1fr;
-  }
-
-  .contato_atalho + .contato_atalho {
-    border-top: 1px solid rgba(255, 255, 255, 0.4);
-    border-left: 0;
-  }
-
-  .formulario_cartao {
-    padding: 30px 24px;
-  }
+@media (max-width: 700px) {
+  .titulo-destaque { font-size: clamp(2.8rem, 14vw, 4.7rem); }
+  .hero-logo { width: 96%; margin-left: 0; }
+  .hero-acoes, .metricas, .mini-graficos, .cadastro-form { grid-template-columns: 1fr; }
+  .hero-acoes { gap: 14px; }
+  .metricas { grid-template-columns: 1fr 1fr; }
+  .rosca-wrap { grid-template-columns: 1fr; justify-items: center; }
+  .beneficios { gap: 15px; }
+  .pagina-publica { padding: 55px 0; }
+  .plano { padding: 32px 22px; }
+  .contato-atalhos { flex-direction: column; }
+  .autenticacao { padding: 82px 16px 35px; }
+  .logo-canto img { width: 92px; }
+  .voltar { top: 22px; right: 18px; }
+  .login-card { padding: 28px 22px; }
+  .cadastro-acoes { grid-column: auto; flex-direction: column; }
+  .app-layout { display: block; padding-bottom: 68px; }
+  .barra-lateral { position: fixed; inset: auto 0 0; width: 100%; height: 68px; flex-direction: row; }
+  .barra-menu { display: none; }
+  .menu-app { grid-template-columns: repeat(6, 1fr); }
+  .menu-app a { min-height: 68px; font-size: 1.25rem; }
+  .menu-app a.ativo::before { inset: 0 0 auto; width: 100%; height: 4px; }
+  .menu-icone { width: 38px; height: 38px; }
+  .app-principal { padding: 16px; }
+  .app-topo { min-height: 65px; }
+  .app-marca span { display: none; }
+  .app-marca img { width: 80px; height: 50px; }
+  .estoque-grade, .receitas-layout { display: block; min-height: auto; }
+  .lista-produtos, .receitas-nomes { display: flex; gap: 10px; overflow-x: auto; padding: 12px 0; border-right: 0; border-bottom: 1px solid #444; }
+  .produto-item, .receitas-nomes button { min-width: 205px; margin: 0; }
+  .produto-detalhe, .lista-receitas, .receita-principal { padding: 20px 5px; }
+  .receita-card { gap: 12px; padding: 18px; }
+  .pizza-vendas { width: min(330px, 75vw); }
+  .kpis, .calendario-grade { grid-template-columns: 1fr; }
+  .calendario-grade { gap: 12px; }
+  .graficos-grade { gap: 24px; }
+  .barras { height: 380px; gap: 6px; padding-inline: 10px; }
+  th, td { padding: 12px; }
 }
-
-@media (max-width: 520px) {
-  .logo_texto {
-    display: none !important;
-  }
-
-  .inicio {
-    padding-top: 28px;
-  }
-
-  .inicio_acoes {
-    gap: 14px;
-  }
-
-  .inicio_acoes .botao {
-    min-height: 62px;
-    font-size: 1rem;
-  }
-
-  .beneficio_inicio {
-    min-height: 118px;
-  }
-
-  .dashboard_demo {
-    padding: 13px;
-  }
-
-  .metrica {
-    min-height: 110px;
-  }
-
-  .grafico_rosca_grade {
-    grid-template-columns: 110px 1fr;
-  }
-
-  .grafico_rosca {
-    width: 108px;
-    height: 108px;
-  }
-
-  .grafico_rosca::after {
-    width: 62px;
-    height: 62px;
-  }
-
-  .voltar_link {
-    top: 14px;
-    right: 14px;
-    font-size: 0.8rem;
-  }
-
-  .logo_canto {
-    display: none;
-  }
-
-  .autenticacao_principal {
-    padding-top: 62px;
-  }
-
-  .login_links,
-  .rodape_conteudo {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .sociais {
-    gap: 12px;
-  }
-
-  .captcha {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .captcha small {
-    text-align: left;
-  }
-
-  .sobre_icone {
-    width: 120px;
-    height: 120px;
-    top: -75px;
-  }
-
-  .sobre_cartoes {
-    gap: 100px;
-    margin-top: 115px;
-  }
-
-  .sobre_cartao {
-    padding-inline: 24px;
-  }
-
-  .contato_titulo::before {
-    display: none;
-  }
-
-  .formulario_cartao .botao {
-    width: 100%;
-  }
-}
-
-@media (hover: none) {
-  .botao:hover {
-    transform: none;
-    box-shadow: none;
-  }
+@media (max-width: 430px) {
+  .metricas { grid-template-columns: 1fr; }
+  .mini-dashboard { padding: 12px; }
+  .mini-topo { align-items: flex-start; flex-direction: column; }
+  .pagina-titulo { font-size: 2.25rem; }
+  .sobre-manifesto { padding: 20px; }
+  .form-card { padding: 24px 18px; }
+  .login-links { align-items: flex-start; flex-direction: column; }
+  .app-topo h1 { font-size: 1.75rem; }
+  .menu-app a { min-width: 0; }
+  .produto-detalhe-topo { align-items: flex-start; flex-direction: column; }
 }
