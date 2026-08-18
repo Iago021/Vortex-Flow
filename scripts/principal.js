@@ -163,8 +163,159 @@
   renderizarIcones(document);
 
   var graficoGeral = document.querySelector(".desempenho-card .linha-dashboard");
-  if (graficoGeral && !graficoGeral.querySelector(".linha-perdas")) {
-    graficoGeral.insertAdjacentHTML("beforeend", '<path class="linha-perdas" d="M20 195C100 191 145 184 230 192s112-18 190-9 123-8 190-4 89 8 130 5"/><g class="grafico-pontos perdas"><circle cx="20" cy="195" r="4"><title>Perdas: R$ 42</title></circle><circle cx="140" cy="188" r="4"><title>Perdas: R$ 55</title></circle><circle cx="260" cy="192" r="4"><title>Perdas: R$ 47</title></circle><circle cx="380" cy="182" r="4"><title>Perdas: R$ 68</title></circle><circle cx="500" cy="185" r="4"><title>Perdas: R$ 61</title></circle><circle cx="620" cy="179" r="4"><title>Perdas: R$ 74</title></circle><circle cx="740" cy="184" r="4"><title>Perdas: R$ 63</title></circle></g>');
+  var cardGrafico = graficoGeral ? graficoGeral.closest(".desempenho-card") : null;
+  if (graficoGeral && cardGrafico) {
+    if (!graficoGeral.querySelector(".linha-perdas")) {
+      graficoGeral.insertAdjacentHTML("beforeend", '<path class="linha-perdas"/><g class="grafico-pontos perdas"></g>');
+    }
+
+    var dadosGrafico = {
+      hoje: {
+        rotulo: "Hoje",
+        labels: ["08h", "10h", "12h", "14h", "16h", "18h"],
+        eixoY: ["R$ 1,6 mil", "R$ 1 mil", "R$ 500", "R$ 0"],
+        maximo: 1600,
+        vendas: [120, 260, 510, 820, 1110, 1240],
+        lucro: [58, 132, 276, 438, 590, 684],
+        perdas: [0, 6, 16, 28, 47, 61.2],
+        resumo: [
+          ["Vendas hoje", 1240],
+          ["Lucro hoje", 684],
+          ["Perdas hoje", 61.2]
+        ]
+      },
+      semana: {
+        rotulo: "Semana",
+        labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+        eixoY: ["R$ 9 mil", "R$ 6 mil", "R$ 3 mil", "R$ 0"],
+        maximo: 9000,
+        vendas: [1240, 2380, 3510, 4890, 6340, 7780, 8290],
+        lucro: [684, 1050, 1530, 2180, 2810, 3370, 3610],
+        perdas: [61.2, 72.5, 88.4, 108.9, 122.1, 139.4, 147.6],
+        resumo: [
+          ["Vendas na semana", 8290],
+          ["Lucro na semana", 3610],
+          ["Perdas na semana", 147.6]
+        ]
+      },
+      mes: {
+        rotulo: "Mês",
+        labels: ["01", "05", "09", "13", "17", "21", "25", "29"],
+        eixoY: ["R$ 30 mil", "R$ 20 mil", "R$ 10 mil", "R$ 0"],
+        maximo: 30000,
+        vendas: [3200, 6900, 10400, 13900, 17300, 20700, 22800, 24680],
+        lucro: [1100, 2350, 3600, 4890, 6120, 7350, 8160, 8750],
+        perdas: [42, 82, 117, 163, 205, 238, 261, 284.5],
+        resumo: [
+          ["Vendas no mês", 24680],
+          ["Lucro líquido", 8750],
+          ["Perdas no mês", 284.5]
+        ]
+      }
+    };
+    var moedaGrafico = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+    var nomesSeries = { vendas: "Vendas", lucro: "Lucro", perdas: "Perdas" };
+
+    function pontosDaSerie(valores, maximo) {
+      var inicioX = 20;
+      var fimX = 740;
+      var topoY = 25;
+      var baseY = 195;
+      return valores.map(function (valor, indice) {
+        var proporcaoX = valores.length > 1 ? indice / (valores.length - 1) : 0;
+        return {
+          x: inicioX + (fimX - inicioX) * proporcaoX,
+          y: baseY - (valor / maximo) * (baseY - topoY)
+        };
+      });
+    }
+
+    function caminhoDaSerie(pontos) {
+      return pontos.map(function (ponto, indice) {
+        return (indice === 0 ? "M" : "L") + ponto.x.toFixed(1) + " " + ponto.y.toFixed(1);
+      }).join(" ");
+    }
+
+    function atualizarPontos(tipo, valores, pontos, labels) {
+      var grupo = graficoGeral.querySelector(".grafico-pontos." + tipo);
+      if (!grupo) return;
+      grupo.replaceChildren();
+      valores.forEach(function (valor, indice) {
+        var descricao = nomesSeries[tipo] + " em " + labels[indice] + ": " + moedaGrafico.format(valor);
+        var circulo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        var titulo = document.createElementNS("http://www.w3.org/2000/svg", "title");
+        circulo.setAttribute("cx", pontos[indice].x.toFixed(1));
+        circulo.setAttribute("cy", pontos[indice].y.toFixed(1));
+        circulo.setAttribute("r", tipo === "vendas" ? "5" : "4");
+        circulo.setAttribute("tabindex", "0");
+        circulo.setAttribute("role", "button");
+        circulo.setAttribute("aria-label", descricao);
+        titulo.textContent = descricao;
+        circulo.appendChild(titulo);
+        circulo.addEventListener("click", function () { mostrarAviso(descricao); });
+        circulo.addEventListener("keydown", function (evento) {
+          if (evento.key === "Enter" || evento.key === " ") {
+            evento.preventDefault();
+            mostrarAviso(descricao);
+          }
+        });
+        grupo.appendChild(circulo);
+      });
+    }
+
+    function atualizarGrafico(periodo) {
+      var dados = dadosGrafico[periodo];
+      if (!dados) return;
+      var pontosVendas = pontosDaSerie(dados.vendas, dados.maximo);
+      var pontosLucro = pontosDaSerie(dados.lucro, dados.maximo);
+      var pontosPerdas = pontosDaSerie(dados.perdas, dados.maximo);
+      var caminhoVendas = caminhoDaSerie(pontosVendas);
+      var baseY = 195;
+      var primeiroX = pontosVendas[0].x.toFixed(1);
+      var ultimoX = pontosVendas[pontosVendas.length - 1].x.toFixed(1);
+
+      cardGrafico.classList.add("grafico-atualizando");
+      graficoGeral.querySelector(".linha-dado").setAttribute("d", caminhoVendas);
+      graficoGeral.querySelector(".linha-area").setAttribute("d", caminhoVendas + " L" + ultimoX + " " + baseY + " L" + primeiroX + " " + baseY + " Z");
+      graficoGeral.querySelector(".linha-lucro").setAttribute("d", caminhoDaSerie(pontosLucro));
+      graficoGeral.querySelector(".linha-perdas").setAttribute("d", caminhoDaSerie(pontosPerdas));
+      graficoGeral.setAttribute("aria-label", "Relatório geral de " + dados.rotulo.toLowerCase() + ": vendas, lucro e perdas");
+
+      atualizarPontos("vendas", dados.vendas, pontosVendas, dados.labels);
+      atualizarPontos("lucro", dados.lucro, pontosLucro, dados.labels);
+      atualizarPontos("perdas", dados.perdas, pontosPerdas, dados.labels);
+
+      var eixoX = cardGrafico.querySelector(".grafico-eixo-x");
+      var eixoY = cardGrafico.querySelector(".grafico-eixo-y");
+      eixoX.replaceChildren();
+      eixoY.replaceChildren();
+      dados.labels.forEach(function (label) {
+        var item = document.createElement("span");
+        item.textContent = label;
+        eixoX.appendChild(item);
+      });
+      dados.eixoY.forEach(function (label) {
+        var item = document.createElement("span");
+        item.textContent = label;
+        eixoY.appendChild(item);
+      });
+
+      cardGrafico.querySelectorAll(".grafico-resumo > div").forEach(function (item, indice) {
+        var resumo = dados.resumo[indice];
+        if (!resumo) return;
+        item.querySelector("small").textContent = resumo[0];
+        item.querySelector("strong").textContent = moedaGrafico.format(resumo[1]);
+      });
+      window.setTimeout(function () { cardGrafico.classList.remove("grafico-atualizando"); }, 160);
+    }
+
+    var periodoPorBotao = { "Hoje": "hoje", "Semana": "semana", "Mês": "mes" };
+    cardGrafico.querySelectorAll("[data-filtro]").forEach(function (botao) {
+      botao.addEventListener("click", function () {
+        atualizarGrafico(periodoPorBotao[botao.textContent.trim()]);
+      });
+    });
+    atualizarGrafico("mes");
   }
 
   var botaoMenu = document.querySelector("[data-menu-botao]");
@@ -215,7 +366,7 @@
       var grupo = filtro.parentElement;
       grupo.querySelectorAll("[data-filtro]").forEach(function (item) { item.classList.remove("ativo"); });
       filtro.classList.add("ativo");
-      mostrarAviso("Filtro visual: " + filtro.textContent.trim());
+      mostrarAviso(filtro.closest(".desempenho-card") ? "Gráfico atualizado: " + filtro.textContent.trim() : "Filtro visual: " + filtro.textContent.trim());
     });
   });
 

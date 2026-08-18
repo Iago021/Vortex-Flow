@@ -762,20 +762,21 @@ body.menu-recolhido .menu-seta, body.menu-recolhido .menu-submenu { display: non
 .tabela-dados tbody tr:last-child td { border-bottom: 0; }
 .tabela-dados td strong, .tabela-dados .bom, .tabela-dados .valor-perda { font-variant-numeric: tabular-nums; }
 
-.grafico-painel { min-height: 0; position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr); grid-template-rows: minmax(130px, 1fr) 22px; margin-top: 8px; }
+.grafico-painel { min-height: 0; position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr); grid-template-rows: minmax(130px, 1fr) 22px; margin-top: 8px; transition: opacity .16s ease, transform .16s ease; }
 .grafico-eixo-y { display: flex; flex-direction: column; justify-content: space-between; padding: 5px 7px 12px 0; color: #777; font-size: .62rem; text-align: right; }
 .grafico-painel .linha-dashboard { height: 100%; min-height: 145px; }
 .grafico-eixo-x { grid-column: 2; display: flex; justify-content: space-between; padding: 3px 7px 0; color: #777; font-size: .62rem; }
 .grafico-pontos.vendas circle { fill: var(--laranja-2); }
 .grafico-pontos.lucro circle { fill: var(--dourado); }
 .grafico-pontos.perdas circle { fill: var(--vermelho); }
-.grafico-pontos circle { stroke: var(--painel-2); stroke-width: 3; transition: r .15s ease; }
-.grafico-pontos circle:hover { r: 7; }
-.grafico-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+.grafico-pontos circle { cursor: pointer; stroke: var(--painel-2); stroke-width: 3; transition: r .15s ease, filter .15s ease; }
+.grafico-pontos circle:hover, .grafico-pontos circle:focus { r: 7; filter: drop-shadow(0 0 4px rgba(240,107,28,.65)); outline: none; }
+.grafico-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; transition: opacity .16s ease, transform .16s ease; }
 .grafico-resumo > div { padding: 9px 11px; border: 1px solid #3f3f3f; border-radius: 9px; background: #2d2d2d; }
 .grafico-resumo small, .grafico-resumo strong { display: block; }
 .grafico-resumo small { color: #8f8f8f; font-size: .65rem; }
 .grafico-resumo strong { margin-top: 3px; font-size: .82rem; }
+.desempenho-card.grafico-atualizando .grafico-painel, .desempenho-card.grafico-atualizando .grafico-resumo { opacity: .45; transform: translateY(2px); }
 
 .mes-grid .festivo { color: #fff; background: linear-gradient(135deg, #bd720d, var(--dourado)); font-weight: 800; }
 .mes-grid .festivo::after { content: "★"; position: absolute; top: 3px; right: 5px; color: #fff4c5; font-size: .55rem; }
