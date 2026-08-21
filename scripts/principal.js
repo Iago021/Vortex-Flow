@@ -77,8 +77,7 @@
       { id: "gestao", icone: "financeiro", rotulo: "Gestão", filhos: [
         { href: "financeiro.html", rotulo: "Financeiro" },
         { href: "calendario.html", rotulo: "Calendário" }
-      ] },
-      { href: "ia_especialista.html", icone: "ia", rotulo: "IA Especialista" }
+      ] }
     ];
     menuApp.innerHTML = itensMenu.map(function (item) {
       if (item.href) {
@@ -135,14 +134,43 @@
 
   if (document.body.classList.contains("app-body")) {
     if (localStorage.getItem("kemet_tema") === "claro") document.body.classList.add("tema-claro");
+
+    var menuPerfil = document.querySelector("[data-perfil-menu]");
+    if (!menuPerfil) {
+      var cabecalhoPagina = document.querySelector(".app-topo");
+      if (cabecalhoPagina) {
+        var areaPerfil = document.createElement("div");
+        areaPerfil.className = "perfil-area perfil-compacto";
+        areaPerfil.innerHTML = '<button class="usuario-chip" type="button" aria-label="Abrir perfil" aria-expanded="false" aria-haspopup="true" data-perfil-botao><span class="usuario-avatar">K</span><span class="perfil-seta" data-icon="chevron"></span></button>' +
+          '<div class="perfil-menu" role="menu" aria-hidden="true" data-perfil-menu><div class="perfil-menu-topo"><span class="usuario-avatar">K</span><div><strong>Kemet Café</strong><small>contato@exemplo.com</small></div></div>' +
+          '<button type="button" role="menuitem" data-prototipo="Seu perfil estará disponível em breve."><span data-icon="usuario"></span>Meu perfil</button>' +
+          '<button type="button" role="menuitem" data-prototipo="Central de ajuda em breve."><span data-icon="ajuda"></span>Ajuda</button>' +
+          '<a href="../index.html" role="menuitem"><span data-icon="sair"></span>Sair</a></div>';
+        (cabecalhoPagina.querySelector(".topo-acoes") || cabecalhoPagina).appendChild(areaPerfil);
+        menuPerfil = areaPerfil.querySelector("[data-perfil-menu]");
+      }
+    }
+
     var botaoTema = document.createElement("button");
     botaoTema.type = "button";
-    botaoTema.className = "tema-alternar";
-    botaoTema.setAttribute("aria-label", "Alternar tema claro e escuro");
-    document.body.appendChild(botaoTema);
+    botaoTema.className = "perfil-tema";
+    botaoTema.setAttribute("role", "menuitem");
+    botaoTema.setAttribute("aria-label", "Alternar entre os temas claro e escuro");
+    if (menuPerfil) {
+      var linkSair = menuPerfil.querySelector('a[href="../index.html"]');
+      menuPerfil.insertBefore(botaoTema, linkSair);
+    }
+
+    var atalhoAssistente = document.createElement("a");
+    atalhoAssistente.className = "ia-flutuante";
+    atalhoAssistente.href = "ia_especialista.html";
+    atalhoAssistente.setAttribute("aria-label", "Abrir assistente");
+    atalhoAssistente.setAttribute("title", "Assistente");
+    document.body.appendChild(atalhoAssistente);
+
     function atualizarBotaoTema() {
       var claro = document.body.classList.contains("tema-claro");
-      botaoTema.innerHTML = '<span data-icon="' + (claro ? "lua" : "sol") + '"></span><span>' + (claro ? "Tema escuro" : "Tema claro") + '</span>';
+      botaoTema.innerHTML = '<span data-icon="' + (claro ? "lua" : "sol") + '"></span><span>' + (claro ? "Usar tema escuro" : "Usar tema claro") + '</span>';
       renderizarIcones(botaoTema);
     }
     atualizarBotaoTema();
