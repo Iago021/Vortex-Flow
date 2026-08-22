@@ -23,6 +23,9 @@
   .sobre-grade { gap: 70px; }
   .planos-grade, .contato-grade, .login-grade { grid-template-columns: 1fr; }
   .planos-grade { gap: 60px; }
+  .pagina-planos .pagina-publica { min-height: calc(100dvh - 82px); align-content: start; padding: 42px 0 52px; }
+  .pagina-planos .planos-grade { grid-template-columns: 1fr; gap: 34px; }
+  .pagina-planos .plano { min-height: 0; }
   .login-grade { gap: 35px; }
   .login-chamada { text-align: center; }
   .app-layout { grid-template-columns: 72px 1fr; }
@@ -132,10 +135,11 @@
   .menu-grupo.aberto .menu-submenu { max-height: 130px; }
   .menu-submenu a { min-width: 0; min-height: 50px; justify-content: flex-start; padding: 10px 13px; }
   .menu-submenu .menu-rotulo { display: inline; }
-  .tema-alternar { right: 14px; bottom: 82px; }
-  .tema-alternar span { display: none; }
+  .ia-flutuante { right: 14px; bottom: 82px; width: 42px; height: 42px; }
   .dashboard-boas-vindas { align-items: flex-start; flex-direction: column; }
   .perfil-area, .usuario-chip { width: 100%; }
+  .perfil-compacto, .perfil-compacto .usuario-chip { width: auto; }
+  .perfil-compacto .perfil-menu { width: min(280px, calc(100vw - 32px)); }
   .perfil-seta { margin-left: auto; }
   .perfil-menu { width: 100%; }
   .dashboard-kpis, .modulo-grade, .acoes-rapidas { grid-template-columns: 1fr; }
