@@ -450,6 +450,22 @@ body.menu-recolhido .menu-seta, body.menu-recolhido .menu-submenu { display: non
 .chat-form { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 18px; }
 .chat-form input { min-height: 50px; padding: 0 15px; border: 1px solid #474747; border-radius: 10px; color: #eee; background: #292929; }
 
+/* Tema escuro das páginas públicas */
+body.tema-escuro:not(.app-body) { --fundo: #171717; --fundo-suave: #1e1e1e; --texto: #ededed; --texto-suave: #b5b5b5; --borda: #353535; --sombra: 0 12px 28px rgba(0,0,0,.24); color: #ededed; background: #171717; }
+.tema-escuro:not(.app-body) .cabecalho { background: rgba(28,28,28,.96); box-shadow: 0 3px 12px rgba(0,0,0,.25); }
+.tema-escuro:not(.app-body) .navegacao, .tema-escuro:not(.app-body) .autenticacao { color: #ededed; background: #1b1b1b; }
+.tema-escuro:not(.app-body) .navegacao a:not(.botao):hover, .tema-escuro:not(.app-body) .navegacao a.ativo:not(.botao) { background: #303030; }
+.tema-escuro:not(.app-body) .botao-menu { color: #f18a58; background: #30231e; }
+.tema-escuro:not(.app-body) .botao-contorno { background: transparent; }
+.tema-escuro:not(.app-body) .cartao, .tema-escuro:not(.app-body) .mini-dashboard, .tema-escuro:not(.app-body) .recurso-card { border-color: #353535; color: #ededed; background: #222; }
+.tema-escuro:not(.app-body) .metrica, .tema-escuro:not(.app-body) .grafico-card { border-color: #393939; background: #262626; }
+.tema-escuro:not(.app-body) .mini-topo h2, .tema-escuro:not(.app-body) .metrica strong, .tema-escuro:not(.app-body) .grafico-card h3, .tema-escuro:not(.app-body) .pagina-titulo, .tema-escuro:not(.app-body) .plano-preco { color: #f0f0f0; }
+.tema-escuro:not(.app-body) .subtitulo, .tema-escuro:not(.app-body) .beneficio p, .tema-escuro:not(.app-body) .metrica small, .tema-escuro:not(.app-body) .pagina-intro, .tema-escuro:not(.app-body) .sobre-card p, .tema-escuro:not(.app-body) .plano > p, .tema-escuro:not(.app-body) .plano ul, .tema-escuro:not(.app-body) .recurso-card p { color: #b8b8b8; }
+.tema-escuro:not(.app-body) .recursos-publicos { background: linear-gradient(180deg, #171717, #211d1b); }
+.tema-escuro:not(.app-body) .secao-cabecalho p { color: #b8b8b8; }
+.tema-escuro:not(.app-body) .rosca::after { background: #262626; }
+.tema-escuro:not(.app-body) .campo input, .tema-escuro:not(.app-body) .campo textarea, .tema-escuro:not(.app-body) .campo select, .tema-escuro:not(.app-body) .social-login button { border-color: #484848; color: #ededed; background: #2a2a2a; }
+
 /* Tema claro do sistema interno */
 .app-body.tema-claro { color: #343434; background: #f5f5f5; }
 .tema-claro .barra-lateral { background: #fff; box-shadow: 4px 0 14px rgba(0,0,0,.1); }

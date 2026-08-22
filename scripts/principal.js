@@ -61,6 +61,42 @@
     tempoAviso = setTimeout(function () { aviso.classList.remove("visivel"); }, 3500);
   }
 
+  var botaoTema = null;
+  var chaveTema = "kemet_tema";
+
+  function obterTemaSalvo() {
+    try {
+      var tema = localStorage.getItem(chaveTema);
+      return tema === "claro" || tema === "escuro" ? tema : null;
+    } catch (erro) {
+      return null;
+    }
+  }
+
+  function aplicarTema(tema) {
+    var temaAtual = tema === "claro" || tema === "escuro" ? tema : (document.body.classList.contains("app-body") ? "escuro" : "claro");
+    var claro = temaAtual === "claro";
+    document.body.classList.toggle("tema-claro", claro);
+    document.body.classList.toggle("tema-escuro", !claro);
+    document.documentElement.dataset.tema = temaAtual;
+    document.documentElement.style.colorScheme = claro ? "light" : "dark";
+
+    if (botaoTema) {
+      botaoTema.innerHTML = '<span data-icon="' + (claro ? "lua" : "sol") + '"></span><span>' + (claro ? "Usar tema escuro" : "Usar tema claro") + '</span>';
+      renderizarIcones(botaoTema);
+    }
+  }
+
+  aplicarTema(obterTemaSalvo());
+
+  window.addEventListener("storage", function (evento) {
+    if (evento.key === chaveTema) aplicarTema(evento.newValue);
+  });
+
+  window.addEventListener("pageshow", function () {
+    aplicarTema(obterTemaSalvo());
+  });
+
   var menuApp = document.querySelector(".menu-app");
   if (menuApp) {
     var paginaAtual = location.pathname.split("/").pop() || "painel.html";
@@ -133,8 +169,6 @@
   }
 
   if (document.body.classList.contains("app-body")) {
-    if (localStorage.getItem("kemet_tema") === "claro") document.body.classList.add("tema-claro");
-
     var menuPerfil = document.querySelector("[data-perfil-menu]");
     if (!menuPerfil) {
       var cabecalhoPagina = document.querySelector(".app-topo");
@@ -151,7 +185,7 @@
       }
     }
 
-    var botaoTema = document.createElement("button");
+    botaoTema = document.createElement("button");
     botaoTema.type = "button";
     botaoTema.className = "perfil-tema";
     botaoTema.setAttribute("role", "menuitem");
@@ -168,16 +202,15 @@
     atalhoAssistente.setAttribute("title", "Assistente");
     document.body.appendChild(atalhoAssistente);
 
-    function atualizarBotaoTema() {
-      var claro = document.body.classList.contains("tema-claro");
-      botaoTema.innerHTML = '<span data-icon="' + (claro ? "lua" : "sol") + '"></span><span>' + (claro ? "Usar tema escuro" : "Usar tema claro") + '</span>';
-      renderizarIcones(botaoTema);
-    }
-    atualizarBotaoTema();
+    aplicarTema(obterTemaSalvo());
     botaoTema.addEventListener("click", function () {
-      document.body.classList.toggle("tema-claro");
-      localStorage.setItem("kemet_tema", document.body.classList.contains("tema-claro") ? "claro" : "escuro");
-      atualizarBotaoTema();
+      var novoTema = document.body.classList.contains("tema-claro") ? "escuro" : "claro";
+      aplicarTema(novoTema);
+      try {
+        localStorage.setItem(chaveTema, novoTema);
+      } catch (erro) {
+        mostrarAviso("Não foi possível salvar sua preferência de tema.");
+      }
     });
   }
 
