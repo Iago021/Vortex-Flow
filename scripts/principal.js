@@ -416,6 +416,7 @@
 
   document.querySelectorAll("[data-mensagem], [data-prototipo]").forEach(function (elemento) {
     elemento.addEventListener("click", function (evento) {
+      if (acaoPorElemento(elemento)) return;
       if (elemento.tagName === "A" && elemento.getAttribute("href") && elemento.getAttribute("href") !== "#") return;
       evento.preventDefault();
       mostrarAviso(elemento.dataset.mensagem || elemento.dataset.prototipo || "Função visual do protótipo.");
@@ -450,6 +451,7 @@
 
   document.querySelectorAll("[data-formulario]").forEach(function (formulario) {
     formulario.addEventListener("submit", function (evento) {
+      if (formulario.classList.contains("chat-form")) return;
       evento.preventDefault();
       var senha = formulario.querySelector("[data-senha]");
       var confirmar = formulario.querySelector("[data-confirmar-senha]");
@@ -523,12 +525,761 @@
     document.querySelectorAll("[data-grafico-pico] .barra, [data-grafico-lucro] .barra").forEach(function (barra, indice) { barra.style.height = 20 + ((indice * 19 + (periodo.value === "mes" ? 33 : 11)) % 68) + "%"; });
   });
 
-  document.querySelectorAll("[data-ia-sugestao]").forEach(function (botao) {
-    botao.addEventListener("click", function () {
-      var mensagens = document.querySelector("[data-mensagens]");
-      if (!mensagens) return;
-      mensagens.insertAdjacentHTML("beforeend", '<div class="mensagem usuario">' + botao.textContent.trim() + '</div><div class="mensagem ia">Analisando os dados demonstrativos: o Bolo de Chocolate lidera as vendas, o Pavê está abaixo do estoque mínimo e o calendário sugere uma campanha para a próxima data comemorativa. Esta é uma resposta visual do protótipo.</div>');
-      mensagens.lastElementChild.scrollIntoView({ behavior: "smooth" });
+
+  var chaveDadosFuncionais = "kemetforge_dados_v1";
+  var mapaAcoes = {
+    "novo compromisso": "compromisso",
+    "novo lançamento": "lancamento",
+    "registrar venda": "venda",
+    "fechar o dia": "fechamento",
+    "ver fechamento completo": "fechamento",
+    "registrar perda": "perda",
+    "comparar com o mês": "comparacao",
+    "novo item": "item",
+    "editar item": "editar-item",
+    "nova receita": "receita"
+  };
+
+  function textoBotao(elemento) {
+    return (elemento && elemento.textContent ? elemento.textContent : "").replace(/\s+/g, " ").trim().toLowerCase();
+  }
+
+  function acaoPorElemento(elemento) {
+    return mapaAcoes[textoBotao(elemento)] || "";
+  }
+
+  function dadosIniciais() {
+    return {
+      compromissos: [],
+      lancamentos: [],
+      vendas: [],
+      perdas: [],
+      itens: [],
+      edicoesItens: [],
+      receitas: [],
+      mensagensIA: []
+    };
+  }
+
+  function lerDadosFuncionais() {
+    var padrao = dadosIniciais();
+    try {
+      var salvo = JSON.parse(localStorage.getItem(chaveDadosFuncionais) || "{}");
+      Object.keys(padrao).forEach(function (chave) {
+        if (Array.isArray(salvo[chave])) padrao[chave] = salvo[chave];
+      });
+    } catch (erro) {
+      return padrao;
+    }
+    return padrao;
+  }
+
+  var dadosFuncionais = lerDadosFuncionais();
+
+  function salvarDadosFuncionais() {
+    try {
+      localStorage.setItem(chaveDadosFuncionais, JSON.stringify(dadosFuncionais));
+    } catch (erro) {
+      mostrarAviso("Não foi possível salvar os dados neste navegador.");
+    }
+  }
+
+  function hojeIso() {
+    var agora = new Date();
+    var mes = String(agora.getMonth() + 1).padStart(2, "0");
+    var dia = String(agora.getDate()).padStart(2, "0");
+    return agora.getFullYear() + "-" + mes + "-" + dia;
+  }
+
+  function horaAtual() {
+    var agora = new Date();
+    return String(agora.getHours()).padStart(2, "0") + ":" + String(agora.getMinutes()).padStart(2, "0");
+  }
+
+  function formatarMoedaFuncional(valor) {
+    return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+
+  function formatarDataFuncional(valor) {
+    if (!valor) return "Hoje";
+    var partes = valor.split("-");
+    return partes.length === 3 ? partes[2] + "/" + partes[1] + "/" + partes[0] : valor;
+  }
+
+  function numeroDeMoeda(texto) {
+    var limpo = String(texto || "").replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, "");
+    return Number(limpo) || 0;
+  }
+
+  function criarCampoFuncional(campo) {
+    var rotulo = document.createElement("label");
+    rotulo.className = "campo-compacto" + (campo.largo ? " campo-largo" : "");
+    var titulo = document.createElement("span");
+    titulo.textContent = campo.rotulo;
+    rotulo.appendChild(titulo);
+
+    var controle;
+    if (campo.tipo === "select") {
+      controle = document.createElement("select");
+      (campo.opcoes || []).forEach(function (opcao) {
+        var item = document.createElement("option");
+        item.value = typeof opcao === "string" ? opcao : opcao[0];
+        item.textContent = typeof opcao === "string" ? opcao : opcao[1];
+        controle.appendChild(item);
+      });
+    } else if (campo.tipo === "textarea") {
+      controle = document.createElement("textarea");
+      controle.rows = campo.linhas || 4;
+      controle.style.minHeight = "96px";
+      controle.style.padding = "10px";
+    } else {
+      controle = document.createElement("input");
+      controle.type = campo.tipo || "text";
+      if (campo.min !== undefined) controle.min = campo.min;
+      if (campo.step !== undefined) controle.step = campo.step;
+    }
+
+    controle.name = campo.nome;
+    controle.required = campo.obrigatorio !== false;
+    if (campo.valor !== undefined && campo.valor !== null) controle.value = campo.valor;
+    if (campo.placeholder) controle.placeholder = campo.placeholder;
+    rotulo.appendChild(controle);
+    return rotulo;
+  }
+
+  function fecharModalFuncional(fundo) {
+    if (fundo && fundo.parentNode) fundo.parentNode.removeChild(fundo);
+  }
+
+  function criarBaseModal(titulo) {
+    var fundo = document.createElement("div");
+    fundo.className = "modal-fundo";
+    fundo.setAttribute("role", "presentation");
+
+    var modal = document.createElement("section");
+    modal.className = "modal app-card";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-label", titulo);
+    modal.style.maxHeight = "calc(100vh - 40px)";
+    modal.style.overflowY = "auto";
+
+    var topo = document.createElement("div");
+    topo.className = "modal-topo";
+    var h2 = document.createElement("h2");
+    h2.textContent = titulo;
+    var fechar = document.createElement("button");
+    fechar.type = "button";
+    fechar.className = "fechar-modal";
+    fechar.setAttribute("aria-label", "Fechar");
+    fechar.textContent = "×";
+    fechar.addEventListener("click", function () { fecharModalFuncional(fundo); });
+    topo.appendChild(h2);
+    topo.appendChild(fechar);
+    modal.appendChild(topo);
+    fundo.appendChild(modal);
+
+    fundo.addEventListener("click", function (evento) {
+      if (evento.target === fundo) fecharModalFuncional(fundo);
     });
-  });
+    document.body.appendChild(fundo);
+    return { fundo: fundo, modal: modal };
+  }
+
+  function configuracaoDaAcao(acao) {
+    if (acao === "compromisso") return {
+      titulo: "Novo compromisso",
+      colecao: "compromissos",
+      sucesso: "Compromisso salvo na agenda.",
+      campos: [
+        { nome: "titulo", rotulo: "Compromisso", placeholder: "Ex.: Receber fornecedor", largo: true },
+        { nome: "data", rotulo: "Data", tipo: "date", valor: hojeIso() },
+        { nome: "hora", rotulo: "Horário", tipo: "time", valor: horaAtual() },
+        { nome: "categoria", rotulo: "Categoria", tipo: "select", opcoes: ["Produção", "Compra", "Conta", "Promoção", "Outro"] },
+        { nome: "detalhes", rotulo: "Detalhes", tipo: "textarea", placeholder: "Informações importantes", largo: true, obrigatorio: false }
+      ]
+    };
+    if (acao === "lancamento") return {
+      titulo: "Novo lançamento",
+      colecao: "lancamentos",
+      sucesso: "Lançamento salvo no financeiro.",
+      campos: [
+        { nome: "tipo", rotulo: "Tipo", tipo: "select", opcoes: ["Receita", "Despesa"] },
+        { nome: "data", rotulo: "Data", tipo: "date", valor: hojeIso() },
+        { nome: "categoria", rotulo: "Categoria", placeholder: "Ex.: Vendas" },
+        { nome: "valor", rotulo: "Valor", tipo: "number", min: "0.01", step: "0.01", placeholder: "0,00" },
+        { nome: "descricao", rotulo: "Descrição", placeholder: "Descreva o lançamento", largo: true }
+      ]
+    };
+    if (acao === "venda") return {
+      titulo: "Registrar venda",
+      colecao: "vendas",
+      sucesso: "Venda registrada com sucesso.",
+      campos: [
+        { nome: "item", rotulo: "Item vendido", placeholder: "Ex.: Bolo de Chocolate", largo: true },
+        { nome: "quantidade", rotulo: "Quantidade", tipo: "number", min: "1", step: "1", valor: "1" },
+        { nome: "valorUnitario", rotulo: "Valor unitário", tipo: "number", min: "0.01", step: "0.01" },
+        { nome: "custoUnitario", rotulo: "Custo unitário", tipo: "number", min: "0", step: "0.01", obrigatorio: false },
+        { nome: "pagamento", rotulo: "Pagamento", tipo: "select", opcoes: ["Pix", "Dinheiro", "Cartão", "Outro"] }
+      ]
+    };
+    if (acao === "perda") return {
+      titulo: "Registrar perda",
+      colecao: "perdas",
+      sucesso: "Perda registrada no controle.",
+      campos: [
+        { nome: "item", rotulo: "Item", placeholder: "Ex.: Pavê Tradicional", largo: true },
+        { nome: "quantidade", rotulo: "Quantidade", tipo: "number", min: "1", step: "1", valor: "1" },
+        { nome: "custoUnitario", rotulo: "Custo unitário", tipo: "number", min: "0", step: "0.01" },
+        { nome: "motivo", rotulo: "Motivo", tipo: "select", opcoes: ["Baixa procura", "Produto danificado", "Erro no preparo", "Validade encerrada", "Produção excessiva", "Outro"], largo: true }
+      ]
+    };
+    if (acao === "item") return {
+      titulo: "Novo item",
+      colecao: "itens",
+      sucesso: "Novo item adicionado ao estoque.",
+      campos: [
+        { nome: "nome", rotulo: "Nome do item", placeholder: "Ex.: Torta de limão", largo: true },
+        { nome: "categoria", rotulo: "Categoria", placeholder: "Ex.: Sobremesas" },
+        { nome: "quantidade", rotulo: "Quantidade", tipo: "number", min: "0", step: "1", valor: "0" },
+        { nome: "custo", rotulo: "Custo de fabricação", tipo: "number", min: "0", step: "0.01" },
+        { nome: "preco", rotulo: "Preço de venda", tipo: "number", min: "0", step: "0.01" },
+        { nome: "minimo", rotulo: "Estoque mínimo", tipo: "number", min: "0", step: "1", valor: "5" }
+      ]
+    };
+    if (acao === "receita") return {
+      titulo: "Nova receita",
+      colecao: "receitas",
+      sucesso: "Receita cadastrada com sucesso.",
+      campos: [
+        { nome: "nome", rotulo: "Nome da receita", placeholder: "Ex.: Torta de limão", largo: true },
+        { nome: "rendimento", rotulo: "Rendimento", tipo: "number", min: "1", step: "1", valor: "1" },
+        { nome: "unidade", rotulo: "Unidade do rendimento", tipo: "select", opcoes: ["unidades", "fatias", "porções"] },
+        { nome: "ingredientes", rotulo: "Ingredientes", tipo: "textarea", placeholder: "Um ingrediente por linha", largo: true },
+        { nome: "custo", rotulo: "Custo total", tipo: "number", min: "0", step: "0.01" }
+      ]
+    };
+    return null;
+  }
+
+  function itemDaLinha(linha) {
+    if (!linha) return null;
+    var celulas = linha.querySelectorAll("td");
+    if (celulas.length < 7) return null;
+    return {
+      nome: celulas[0].textContent.trim(),
+      categoria: celulas[1].textContent.trim(),
+      quantidade: parseInt(celulas[2].textContent, 10) || 0,
+      custo: numeroDeMoeda(celulas[3].textContent),
+      preco: numeroDeMoeda(celulas[4].textContent),
+      minimo: linha.dataset.minimo || 5,
+      original: linha.dataset.original || celulas[0].textContent.trim(),
+      indice: linha.dataset.itemIndice === undefined ? -1 : Number(linha.dataset.itemIndice),
+      linha: linha
+    };
+  }
+
+  function itemSelecionadoAtual() {
+    var linha = document.querySelector(".produtos-workspace tbody tr.linha-selecionada");
+    if (!linha) linha = document.querySelector(".produtos-workspace tbody tr");
+    return itemDaLinha(linha);
+  }
+
+  function configuracaoEditarItem() {
+    var item = itemSelecionadoAtual();
+    if (!item) return null;
+    return {
+      titulo: "Editar item",
+      colecao: "edicoesItens",
+      sucesso: "Item atualizado com sucesso.",
+      contexto: item,
+      campos: [
+        { nome: "nome", rotulo: "Nome do item", valor: item.nome, largo: true },
+        { nome: "categoria", rotulo: "Categoria", valor: item.categoria },
+        { nome: "quantidade", rotulo: "Quantidade", tipo: "number", min: "0", step: "1", valor: item.quantidade },
+        { nome: "custo", rotulo: "Custo de fabricação", tipo: "number", min: "0", step: "0.01", valor: item.custo },
+        { nome: "preco", rotulo: "Preço de venda", tipo: "number", min: "0", step: "0.01", valor: item.preco },
+        { nome: "minimo", rotulo: "Estoque mínimo", tipo: "number", min: "0", step: "1", valor: item.minimo }
+      ]
+    };
+  }
+
+  function normalizarRegistro(configuracao, formulario) {
+    var dados = {};
+    configuracao.campos.forEach(function (campo) {
+      var controle = formulario.elements[campo.nome];
+      var valor = controle ? controle.value.trim() : "";
+      if (campo.tipo === "number") valor = Number(valor || 0);
+      dados[campo.nome] = valor;
+    });
+    dados.id = Date.now();
+    dados.criadoEm = new Date().toISOString();
+    return dados;
+  }
+
+  function salvarRegistroDaAcao(acao, configuracao, registro) {
+    if (acao === "editar-item") {
+      var contexto = configuracao.contexto;
+      if (contexto.indice >= 0 && dadosFuncionais.itens[contexto.indice]) {
+        registro.id = dadosFuncionais.itens[contexto.indice].id;
+        dadosFuncionais.itens[contexto.indice] = registro;
+      } else {
+        registro.original = contexto.original;
+        var posicao = dadosFuncionais.edicoesItens.findIndex(function (item) { return item.original === contexto.original; });
+        if (posicao >= 0) dadosFuncionais.edicoesItens[posicao] = registro;
+        else dadosFuncionais.edicoesItens.push(registro);
+      }
+    } else {
+      dadosFuncionais[configuracao.colecao].push(registro);
+    }
+    salvarDadosFuncionais();
+    renderizarDadosFuncionais();
+  }
+
+  function abrirFormularioAcao(acao) {
+    if (acao === "fechamento") {
+      abrirFechamentoCompleto();
+      return;
+    }
+    if (acao === "comparacao") {
+      abrirComparacaoMensal();
+      return;
+    }
+
+    var configuracao = acao === "editar-item" ? configuracaoEditarItem() : configuracaoDaAcao(acao);
+    if (!configuracao) {
+      mostrarAviso(acao === "editar-item" ? "Selecione um item para editar." : "Ação indisponível.");
+      return;
+    }
+
+    var base = criarBaseModal(configuracao.titulo);
+    var formulario = document.createElement("form");
+    formulario.className = "mini-form";
+    var grade = document.createElement("div");
+    grade.className = "form-grade";
+    configuracao.campos.forEach(function (campo) { grade.appendChild(criarCampoFuncional(campo)); });
+    formulario.appendChild(grade);
+
+    var acoes = document.createElement("div");
+    acoes.className = "topo-acoes";
+    acoes.style.justifyContent = "flex-end";
+    var cancelar = document.createElement("button");
+    cancelar.type = "button";
+    cancelar.className = "app-botao secundario";
+    cancelar.textContent = "Cancelar";
+    cancelar.addEventListener("click", function () { fecharModalFuncional(base.fundo); });
+    var salvar = document.createElement("button");
+    salvar.type = "submit";
+    salvar.className = "app-botao";
+    salvar.textContent = "Salvar";
+    acoes.appendChild(cancelar);
+    acoes.appendChild(salvar);
+    formulario.appendChild(acoes);
+
+    formulario.addEventListener("submit", function (evento) {
+      evento.preventDefault();
+      if (!formulario.checkValidity()) {
+        formulario.reportValidity();
+        return;
+      }
+      var registro = normalizarRegistro(configuracao, formulario);
+      salvarRegistroDaAcao(acao, configuracao, registro);
+      fecharModalFuncional(base.fundo);
+      mostrarAviso(configuracao.sucesso);
+    });
+
+    base.modal.appendChild(formulario);
+    var primeiro = formulario.querySelector("input, select, textarea");
+    if (primeiro) primeiro.focus();
+  }
+
+  function criarCelula(linha, texto, classe) {
+    var celula = document.createElement("td");
+    celula.textContent = texto;
+    if (classe) celula.className = classe;
+    linha.appendChild(celula);
+    return celula;
+  }
+
+  function removerRegistrosRenderizados(seletor) {
+    document.querySelectorAll(seletor + " .registro-salvo").forEach(function (elemento) { elemento.remove(); });
+  }
+
+  function renderizarLancamentos() {
+    var corpo = document.querySelector(".movimentacoes-financeiras tbody");
+    if (!corpo) return;
+    removerRegistrosRenderizados(".movimentacoes-financeiras tbody");
+    dadosFuncionais.lancamentos.forEach(function (registro) {
+      var linha = document.createElement("tr");
+      linha.className = "registro-salvo";
+      criarCelula(linha, formatarDataFuncional(registro.data));
+      var tipo = document.createElement("td");
+      var status = document.createElement("span");
+      status.className = "status" + (registro.tipo === "Receita" ? "" : " alerta");
+      status.textContent = registro.tipo;
+      tipo.appendChild(status);
+      linha.appendChild(tipo);
+      criarCelula(linha, registro.categoria);
+      criarCelula(linha, registro.descricao);
+      criarCelula(linha, "Manual");
+      criarCelula(linha, (registro.tipo === "Receita" ? "+ " : "− ") + formatarMoedaFuncional(registro.valor), registro.tipo === "Receita" ? "bom" : "valor-perda");
+      corpo.appendChild(linha);
+    });
+    var rodape = document.querySelector(".movimentacoes-financeiras .tabela-rodape span");
+    if (rodape) rodape.textContent = (4 + dadosFuncionais.lancamentos.length) + " movimentações exibidas";
+  }
+
+  function renderizarVendas() {
+    var corpo = document.querySelector(".vendas-workspace .tabela-dados tbody");
+    if (!corpo) return;
+    removerRegistrosRenderizados(".vendas-workspace .tabela-dados tbody");
+    dadosFuncionais.vendas.forEach(function (registro, indice) {
+      var quantidade = Number(registro.quantidade || 0);
+      var valor = Number(registro.valorUnitario || 0);
+      var custoUnitario = Number(registro.custoUnitario || 0);
+      var total = quantidade * valor;
+      var custo = quantidade * custoUnitario;
+      var linha = document.createElement("tr");
+      linha.className = "registro-salvo";
+      criarCelula(linha, "#N" + String(indice + 1).padStart(2, "0"));
+      criarCelula(linha, registro.criadoEm ? new Date(registro.criadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : horaAtual());
+      criarCelula(linha, registro.item);
+      criarCelula(linha, quantidade + " un.");
+      criarCelula(linha, formatarMoedaFuncional(valor));
+      criarCelula(linha, formatarMoedaFuncional(total), "bom");
+      criarCelula(linha, formatarMoedaFuncional(custo));
+      criarCelula(linha, formatarMoedaFuncional(total - custo), "bom");
+      corpo.appendChild(linha);
+    });
+    var rodape = document.querySelector(".vendas-workspace .tabela-rodape span");
+    if (rodape) rodape.textContent = (14 + dadosFuncionais.vendas.length) + " vendas registradas";
+  }
+
+  function renderizarPerdas() {
+    var corpo = document.querySelector(".perdas-workspace .tabela-dados tbody");
+    if (!corpo) return;
+    removerRegistrosRenderizados(".perdas-workspace .tabela-dados tbody");
+    dadosFuncionais.perdas.forEach(function (registro) {
+      var total = Number(registro.quantidade || 0) * Number(registro.custoUnitario || 0);
+      var linha = document.createElement("tr");
+      linha.className = "registro-salvo";
+      criarCelula(linha, formatarDataFuncional(registro.criadoEm ? registro.criadoEm.slice(0, 10) : hojeIso()) + " • " + (registro.criadoEm ? new Date(registro.criadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : horaAtual()));
+      criarCelula(linha, registro.item);
+      criarCelula(linha, registro.quantidade + " un.");
+      criarCelula(linha, registro.motivo);
+      criarCelula(linha, "Registro manual");
+      criarCelula(linha, formatarMoedaFuncional(registro.custoUnitario));
+      criarCelula(linha, formatarMoedaFuncional(total), "valor-perda");
+      corpo.appendChild(linha);
+    });
+    var rodape = document.querySelector(".perdas-workspace .tabela-rodape span");
+    if (rodape) rodape.textContent = (5 + dadosFuncionais.perdas.length) + " registros exibidos";
+  }
+
+  function preencherLinhaItem(linha, registro) {
+    var lucro = Number(registro.preco || 0) - Number(registro.custo || 0);
+    var baixo = Number(registro.quantidade || 0) <= Number(registro.minimo || 0);
+    linha.innerHTML = "";
+    var nome = criarCelula(linha, registro.nome);
+    nome.className = "celula-principal";
+    criarCelula(linha, registro.categoria);
+    criarCelula(linha, registro.quantidade + " un.");
+    criarCelula(linha, formatarMoedaFuncional(registro.custo));
+    criarCelula(linha, formatarMoedaFuncional(registro.preco));
+    criarCelula(linha, formatarMoedaFuncional(lucro), "bom");
+    var statusCelula = document.createElement("td");
+    var status = document.createElement("span");
+    status.className = "status" + (baixo ? " alerta" : "");
+    status.textContent = baixo ? "Estoque baixo" : "Disponível";
+    statusCelula.appendChild(status);
+    linha.appendChild(statusCelula);
+    linha.dataset.minimo = registro.minimo;
+  }
+
+  function registroDaLinhaItem(linha) {
+    return itemDaLinha(linha);
+  }
+
+  function atualizarDetalhesItem(registro) {
+    var destaque = document.querySelector(".produtos-workspace .produto-destaque");
+    if (!destaque || !registro) return;
+    var titulo = destaque.querySelector("h2");
+    var status = destaque.querySelector(".status");
+    if (titulo) titulo.textContent = registro.nome;
+    if (status) status.textContent = registro.quantidade + " unidades disponíveis";
+    var metricas = document.querySelectorAll(".produtos-workspace .resumo-metricas strong");
+    var lucro = Number(registro.preco || 0) - Number(registro.custo || 0);
+    var margem = Number(registro.preco || 0) ? Math.round((lucro / Number(registro.preco)) * 100) : 0;
+    if (metricas[0]) metricas[0].textContent = formatarMoedaFuncional(registro.custo);
+    if (metricas[1]) metricas[1].textContent = formatarMoedaFuncional(registro.preco);
+    if (metricas[2]) metricas[2].textContent = formatarMoedaFuncional(lucro);
+    if (metricas[3]) metricas[3].textContent = margem + "%";
+  }
+
+  function ativarSelecaoItens() {
+    document.querySelectorAll(".produtos-workspace tbody tr").forEach(function (linha) {
+      if (linha.dataset.selecaoPronta) return;
+      linha.dataset.selecaoPronta = "1";
+      linha.style.cursor = "pointer";
+      linha.addEventListener("click", function () {
+        document.querySelectorAll(".produtos-workspace tbody tr").forEach(function (item) { item.classList.remove("linha-selecionada"); });
+        linha.classList.add("linha-selecionada");
+        atualizarDetalhesItem(registroDaLinhaItem(linha));
+      });
+    });
+  }
+
+  function renderizarItens() {
+    var corpo = document.querySelector(".produtos-workspace .tabela-dados tbody");
+    if (!corpo) return;
+    removerRegistrosRenderizados(".produtos-workspace .tabela-dados tbody");
+
+    dadosFuncionais.edicoesItens.forEach(function (registro) {
+      var linhas = Array.prototype.slice.call(corpo.querySelectorAll("tr:not(.registro-salvo)"));
+      var linha = linhas.find(function (item) { return (item.dataset.original || item.cells[0].textContent.trim()) === registro.original; });
+      if (linha) {
+        linha.dataset.original = registro.original;
+        preencherLinhaItem(linha, registro);
+      }
+    });
+
+    dadosFuncionais.itens.forEach(function (registro, indice) {
+      var linha = document.createElement("tr");
+      linha.className = "registro-salvo";
+      linha.dataset.itemIndice = indice;
+      preencherLinhaItem(linha, registro);
+      corpo.appendChild(linha);
+    });
+    ativarSelecaoItens();
+    var contador = document.querySelector(".produtos-workspace .modulo-cabecalho small");
+    if (contador) contador.textContent = (4 + dadosFuncionais.itens.length) + " itens cadastrados • salvo neste navegador";
+  }
+
+  function renderizarCompromissos() {
+    var lista = document.querySelector(".agenda-dia .linha-tempo");
+    if (!lista) return;
+    removerRegistrosRenderizados(".agenda-dia .linha-tempo");
+    dadosFuncionais.compromissos.forEach(function (registro) {
+      var linha = document.createElement("div");
+      linha.className = "registro-salvo";
+      var hora = document.createElement("time");
+      hora.textContent = registro.hora || "--:--";
+      var marcador = document.createElement("i");
+      marcador.className = registro.categoria === "Compra" ? "compra" : registro.categoria === "Conta" ? "conta" : registro.categoria === "Promoção" ? "promocao" : "producao";
+      var texto = document.createElement("span");
+      var forte = document.createElement("strong");
+      forte.textContent = registro.titulo;
+      var detalhe = document.createElement("small");
+      detalhe.textContent = formatarDataFuncional(registro.data) + (registro.detalhes ? " • " + registro.detalhes : "");
+      texto.appendChild(forte);
+      texto.appendChild(detalhe);
+      linha.appendChild(hora);
+      linha.appendChild(marcador);
+      linha.appendChild(texto);
+      lista.appendChild(linha);
+    });
+    var contador = document.querySelector(".agenda-dia .modulo-cabecalho small");
+    if (contador) contador.textContent = (4 + dadosFuncionais.compromissos.length) + " compromissos";
+  }
+
+  function mostrarReceitaSalva(registro) {
+    var ficha = document.querySelector(".ficha-tecnica");
+    if (!ficha) return;
+    var titulo = ficha.querySelector(".modulo-cabecalho h2");
+    var subtitulo = ficha.querySelector(".modulo-cabecalho small");
+    if (titulo) titulo.textContent = registro.nome;
+    if (subtitulo) subtitulo.textContent = "Rende " + registro.rendimento + " " + registro.unidade;
+    var corpo = ficha.querySelector("tbody");
+    if (corpo) {
+      corpo.innerHTML = "";
+      String(registro.ingredientes || "").split(/\n|,/).filter(function (item) { return item.trim(); }).forEach(function (ingrediente) {
+        var linha = document.createElement("tr");
+        criarCelula(linha, ingrediente.trim());
+        criarCelula(linha, "Informado no cadastro");
+        criarCelula(linha, "—");
+        criarCelula(linha, "—");
+        corpo.appendChild(linha);
+      });
+    }
+    var totais = ficha.querySelectorAll(".ficha-rodape strong");
+    if (totais[2]) totais[2].textContent = formatarMoedaFuncional(registro.custo);
+  }
+
+  function renderizarReceitas() {
+    var lista = document.querySelector(".receitas-workspace .lista-selecao");
+    if (!lista) return;
+    removerRegistrosRenderizados(".receitas-workspace .lista-selecao");
+    var observacao = lista.querySelector(".receita-observacao");
+    dadosFuncionais.receitas.forEach(function (registro) {
+      var botao = document.createElement("button");
+      botao.type = "button";
+      botao.className = "item-selecao registro-salvo";
+      var conteudo = document.createElement("span");
+      var nome = document.createElement("strong");
+      nome.textContent = registro.nome;
+      var detalhe = document.createElement("small");
+      detalhe.textContent = registro.rendimento + " " + registro.unidade + " • cadastrada agora";
+      conteudo.appendChild(nome);
+      conteudo.appendChild(detalhe);
+      botao.appendChild(conteudo);
+      botao.addEventListener("click", function () {
+        lista.querySelectorAll(".item-selecao").forEach(function (item) { item.classList.remove("ativo"); });
+        botao.classList.add("ativo");
+        mostrarReceitaSalva(registro);
+      });
+      lista.insertBefore(botao, observacao);
+    });
+    var contador = lista.querySelector(".modulo-cabecalho small");
+    if (contador) contador.textContent = (3 + dadosFuncionais.receitas.length) + " cadastradas";
+  }
+
+  function abrirResumoFuncional(titulo, itens) {
+    var base = criarBaseModal(titulo);
+    var grade = document.createElement("div");
+    grade.className = "resumo-metricas";
+    grade.style.marginTop = "20px";
+    itens.forEach(function (item) {
+      var bloco = document.createElement("div");
+      var rotulo = document.createElement("small");
+      rotulo.textContent = item[0];
+      var valor = document.createElement("strong");
+      valor.textContent = item[1];
+      bloco.appendChild(rotulo);
+      bloco.appendChild(valor);
+      grade.appendChild(bloco);
+    });
+    base.modal.appendChild(grade);
+    var fechar = document.createElement("button");
+    fechar.type = "button";
+    fechar.className = "app-botao largura-total";
+    fechar.style.marginTop = "20px";
+    fechar.textContent = "Fechar";
+    fechar.addEventListener("click", function () { fecharModalFuncional(base.fundo); });
+    base.modal.appendChild(fechar);
+  }
+
+  function abrirFechamentoCompleto() {
+    var receitaNova = dadosFuncionais.vendas.reduce(function (total, venda) { return total + Number(venda.quantidade || 0) * Number(venda.valorUnitario || 0); }, 0);
+    var custoNovo = dadosFuncionais.vendas.reduce(function (total, venda) { return total + Number(venda.quantidade || 0) * Number(venda.custoUnitario || 0); }, 0);
+    var itensNovos = dadosFuncionais.vendas.reduce(function (total, venda) { return total + Number(venda.quantidade || 0); }, 0);
+    var receita = 1240 + receitaNova;
+    var custo = 486.2 + custoNovo;
+    abrirResumoFuncional("Fechamento completo do dia", [
+      ["Itens vendidos", String(72 + itensNovos)],
+      ["Receita", formatarMoedaFuncional(receita)],
+      ["Custo das vendas", formatarMoedaFuncional(custo)],
+      ["Lucro estimado", formatarMoedaFuncional(receita - custo)],
+      ["Vendas adicionadas", String(dadosFuncionais.vendas.length)]
+    ]);
+  }
+
+  function abrirComparacaoMensal() {
+    var totalSalvo = dadosFuncionais.perdas.reduce(function (total, perda) { return total + Number(perda.quantidade || 0) * Number(perda.custoUnitario || 0); }, 0);
+    var atual = 147.6 + totalSalvo;
+    var anterior = 168.5;
+    var diferenca = atual - anterior;
+    var percentual = anterior ? Math.abs(diferenca / anterior * 100) : 0;
+    abrirResumoFuncional("Comparação mensal das perdas", [
+      ["Mês atual", formatarMoedaFuncional(atual)],
+      ["Mês anterior", formatarMoedaFuncional(anterior)],
+      [diferenca <= 0 ? "Redução" : "Aumento", percentual.toFixed(1).replace(".", ",") + "%"],
+      ["Diferença", formatarMoedaFuncional(Math.abs(diferenca))],
+      ["Novos registros", String(dadosFuncionais.perdas.length)]
+    ]);
+  }
+
+  function ativarAcoesFuncionais() {
+    document.querySelectorAll("button, a").forEach(function (elemento) {
+      var acao = acaoPorElemento(elemento);
+      if (!acao || elemento.dataset.acaoPronta) return;
+      elemento.dataset.acaoPronta = "1";
+      elemento.addEventListener("click", function (evento) {
+        evento.preventDefault();
+        abrirFormularioAcao(acao);
+      });
+    });
+  }
+
+  function adicionarMensagemNaTela(tipo, texto, salvar) {
+    var mensagens = document.querySelector("[data-mensagens]");
+    if (!mensagens) return;
+    var mensagem = document.createElement("div");
+    mensagem.className = "mensagem " + tipo + " registro-salvo";
+    mensagem.textContent = texto;
+    mensagens.appendChild(mensagem);
+    if (salvar !== false) {
+      mensagens.scrollTop = mensagens.scrollHeight;
+      mensagem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    if (salvar !== false) {
+      dadosFuncionais.mensagensIA.push({ tipo: tipo, texto: texto, criadoEm: new Date().toISOString() });
+      salvarDadosFuncionais();
+    }
+  }
+
+  function respostaDaIA(pergunta) {
+    var texto = pergunta.toLowerCase();
+    var totalVendas = dadosFuncionais.vendas.reduce(function (total, venda) { return total + Number(venda.quantidade || 0) * Number(venda.valorUnitario || 0); }, 0);
+    var totalLucro = dadosFuncionais.vendas.reduce(function (total, venda) { return total + Number(venda.quantidade || 0) * (Number(venda.valorUnitario || 0) - Number(venda.custoUnitario || 0)); }, 0);
+    var totalPerdas = dadosFuncionais.perdas.reduce(function (total, perda) { return total + Number(perda.quantidade || 0) * Number(perda.custoUnitario || 0); }, 0);
+    var itemBaixo = dadosFuncionais.itens.find(function (item) { return Number(item.quantidade || 0) <= Number(item.minimo || 0); });
+
+    if (texto.indexOf("lucro") >= 0) return "O lucro líquido demonstrado do mês é de " + formatarMoedaFuncional(8750 + totalLucro) + ". As vendas registradas por você acrescentaram " + formatarMoedaFuncional(totalLucro) + " de lucro estimado.";
+    if (texto.indexOf("acabando") >= 0 || texto.indexOf("estoque") >= 0) return itemBaixo ? itemBaixo.nome + " está com estoque baixo: " + itemBaixo.quantidade + " unidades para um mínimo de " + itemBaixo.minimo + "." : "O Pavê Tradicional continua sendo o item de atenção, com 6 unidades disponíveis.";
+    if (texto.indexOf("perdi") >= 0 || texto.indexOf("perda") >= 0) return "As perdas da semana somam " + formatarMoedaFuncional(147.6 + totalPerdas) + ", incluindo " + formatarMoedaFuncional(totalPerdas) + " nos registros adicionados por você.";
+    if (texto.indexOf("promo") >= 0 || texto.indexOf("sobra") >= 0) return "Uma boa opção é criar um combo de café com o item que mais sobrou e oferecer desconto leve no fim da tarde. Assim você reduz perdas sem derrubar muito a margem.";
+    if (texto.indexOf("data comemorativa") >= 0 || texto.indexOf("próxima data") >= 0) return "Para a próxima data comemorativa, monte um kit de café com doce, uma caixa de brigadeiros ou uma promoção leve 3, pague 2.";
+    if (texto.indexOf("venda") >= 0 || texto.indexOf("fatur") >= 0) return "O faturamento demonstrado é de " + formatarMoedaFuncional(24680 + totalVendas) + ". Você adicionou " + dadosFuncionais.vendas.length + " nova(s) venda(s) neste navegador.";
+    if (texto.indexOf("compromisso") >= 0 || texto.indexOf("agenda") >= 0) return "Você possui " + dadosFuncionais.compromissos.length + " compromisso(s) adicionado(s). Use o Calendário para conferir os horários e detalhes.";
+    return "Posso analisar vendas, lucro, estoque, perdas, agenda e promoções. Pergunte, por exemplo: quanto lucrei, qual item está acabando ou quanto perdi.";
+  }
+
+  function enviarMensagemParaIA(texto) {
+    var pergunta = String(texto || "").trim();
+    if (!pergunta) return;
+    adicionarMensagemNaTela("usuario", pergunta, true);
+    window.setTimeout(function () {
+      adicionarMensagemNaTela("ia", respostaDaIA(pergunta), true);
+    }, 350);
+  }
+
+  function ativarChatIA() {
+    var mensagens = document.querySelector("[data-mensagens]");
+    if (mensagens) {
+      mensagens.querySelectorAll(".registro-salvo").forEach(function (item) { item.remove(); });
+      dadosFuncionais.mensagensIA.forEach(function (item) { adicionarMensagemNaTela(item.tipo, item.texto, false); });
+    }
+
+    var formulario = document.querySelector(".chat-form");
+    if (formulario && !formulario.dataset.chatPronto) {
+      formulario.dataset.chatPronto = "1";
+      formulario.addEventListener("submit", function (evento) {
+        evento.preventDefault();
+        var campo = formulario.querySelector("input");
+        if (!campo || !campo.value.trim()) return;
+        enviarMensagemParaIA(campo.value);
+        campo.value = "";
+        campo.focus();
+      });
+    }
+
+    document.querySelectorAll("[data-ia-sugestao]").forEach(function (botao) {
+      if (botao.dataset.chatPronto) return;
+      botao.dataset.chatPronto = "1";
+      botao.addEventListener("click", function () { enviarMensagemParaIA(botao.textContent.trim()); });
+    });
+  }
+
+  function renderizarDadosFuncionais() {
+    renderizarLancamentos();
+    renderizarVendas();
+    renderizarPerdas();
+    renderizarItens();
+    renderizarCompromissos();
+    renderizarReceitas();
+  }
+
+  renderizarDadosFuncionais();
+  ativarAcoesFuncionais();
+  ativarChatIA();
 })();
