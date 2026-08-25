@@ -4,7 +4,7 @@
   var linkFavicon = document.querySelector('link[rel~="icon"]');
   if (linkFavicon) {
     var dentroDePaginas = location.pathname.indexOf("/paginas/") >= 0;
-    linkFavicon.href = (dentroDePaginas ? "../" : "") + "imagens/favicon.svg?v=3";
+    linkFavicon.href = (dentroDePaginas ? "../" : "") + "imagens/logo_simbolo.svg?v=5";
     linkFavicon.type = "image/svg+xml";
   }
 
@@ -94,14 +94,14 @@
     }
   }
 
-  aplicarTema(obterTemaSalvo());
+  aplicarTema(document.body.classList.contains("app-body") ? obterTemaSalvo() : "claro");
 
   window.addEventListener("storage", function (evento) {
-    if (evento.key === chaveTema) aplicarTema(evento.newValue);
+    if (evento.key === chaveTema && document.body.classList.contains("app-body")) aplicarTema(evento.newValue);
   });
 
   window.addEventListener("pageshow", function () {
-    aplicarTema(obterTemaSalvo());
+    aplicarTema(document.body.classList.contains("app-body") ? obterTemaSalvo() : "claro");
   });
 
   var menuApp = document.querySelector(".menu-app");
@@ -111,6 +111,8 @@
       { href: "painel.html", icone: "dashboard", rotulo: "Visão Geral" },
       { id: "estoque", icone: "estoque", rotulo: "Estoque", filhos: [
         { href: "produtos.html", rotulo: "Itens e preços" },
+        { href: "ingredientes.html", rotulo: "Ingredientes" },
+        { href: "estoque.html", rotulo: "Movimentações" },
         { href: "receitas.html", rotulo: "Receitas" }
       ] },
       { id: "operacao", icone: "vendas", rotulo: "Operação", filhos: [
@@ -120,7 +122,8 @@
       { id: "gestao", icone: "financeiro", rotulo: "Gestão", filhos: [
         { href: "financeiro.html", rotulo: "Financeiro" },
         { href: "calendario.html", rotulo: "Calendário" }
-      ] }
+      ] },
+      { href: "ia_especialista.html", icone: "ia", rotulo: "Assistente" }
     ];
     menuApp.innerHTML = itensMenu.map(function (item) {
       if (item.href) {
@@ -202,12 +205,17 @@
       menuPerfil.insertBefore(botaoTema, linkSair);
     }
 
-    var atalhoAssistente = document.createElement("a");
-    atalhoAssistente.className = "ia-flutuante";
-    atalhoAssistente.href = "ia_especialista.html";
-    atalhoAssistente.setAttribute("aria-label", "Abrir assistente");
-    atalhoAssistente.setAttribute("title", "Assistente");
-    document.body.appendChild(atalhoAssistente);
+    var paginaInternaAtual = location.pathname.split("/").pop() || "painel.html";
+    if (paginaInternaAtual !== "ia_especialista.html") {
+      var atalhoAssistente = document.createElement("a");
+      atalhoAssistente.className = "ia-flutuante";
+      atalhoAssistente.href = "ia_especialista.html";
+      atalhoAssistente.setAttribute("aria-label", "Abrir assistente");
+      atalhoAssistente.setAttribute("title", "Assistente");
+      atalhoAssistente.innerHTML = '<span data-icon="ia"></span>';
+      document.body.appendChild(atalhoAssistente);
+      renderizarIcones(atalhoAssistente);
+    }
 
     aplicarTema(obterTemaSalvo());
     botaoTema.addEventListener("click", function () {
