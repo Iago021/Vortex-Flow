@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="45 0 665 320" role="img" aria-labelledby="titulo descricao">
+  <title id="titulo">Símbolo KemetForge</title>
+  <desc id="descricao">Ferreiro trabalhando em uma bigorna dentro de um triângulo dourado.</desc>
+  <defs>
+    <linearGradient id="ouro" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0b13a"/>
+      <stop offset="1" stop-color="#c7830f"/>
+    </linearGradient>
+    <linearGradient id="fogo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff05b"/>
+      <stop offset=".48" stop-color="#ff8a16"/>
+      <stop offset="1" stop-color="#d63b08"/>
+    </linearGradient>
+  </defs>
+  <path d="M170 286 380 23l181 229" fill="none" stroke="url(#ouro)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m72 292 58-86 61 86Zm497 0 56-86 63 86Z" fill="url(#ouro)"/>
+  <path d="M82 294h602" fill="none" stroke="#111" stroke-width="9" stroke-linecap="round"/>
+  <g fill="#111">
+    <path d="M267 83c-22 2-39 18-41 42l40 8c4-14 13-22 29-20l13 12c0-25-16-44-41-42Z"/>
+    <path d="m248 124-45 69 75 27 39-60-18-33-30 10Z"/>
+    <path d="m224 188-28 89h47l21-64Z"/>
+    <path d="m264 205-9 72h89l-4-17-42-7 15-43Z"/>
+    <path d="M187 275h80v19h-98c0-10 8-19 18-19Zm72 0h98v19H244c0-10 6-19 15-19Z"/>
+  </g>
+  <path d="M244 114c8-12 20-18 35-16 8 1 15 5 21 11-18-3-31 1-38 15Z" fill="#fff"/>
+  <path d="m219 161 54 21 49-47" fill="none" stroke="#111" stroke-width="23" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m317 153 53 27 36-45" fill="none" stroke="#111" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m394 144 28-60" fill="none" stroke="#111" stroke-width="9" stroke-linecap="round"/>
+  <path d="m399 80 39-18 13 29-42 18Z" fill="#111"/>
+  <path d="m267 193 90 48 84 11" fill="none" stroke="#111" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m352 233 14 18m-3-13 13 15" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round"/>
+  <g fill="none" stroke-linecap="round">
+    <path d="m455 153-8-18m34 20 13-18m-2 42 24-10m-76 12-22-9m78 33 24 5" stroke="#d99718" stroke-width="5"/>
+    <path d="m462 176-2-18m24 30 19-12m-67 28-19 3" stroke="#e35b18" stroke-width="4"/>
+  </g>
+  <path d="M448 244c-23-19-19-42-5-60 1 16 10 22 17 25-7-29 10-48 31-66-3 22 11 31 18 48 7-10 9-21 8-31 20 20 25 54 3 84Z" fill="#d63b08"/>
+  <path d="M464 244c-15-15-12-31-3-45 3 10 9 15 15 18-3-19 6-32 18-43 0 16 10 22 13 35 4-5 6-10 7-16 10 14 10 34-3 51Z" fill="url(#fogo)"/>
+  <path d="M479 244c-7-9-5-19 2-28 1 8 5 11 9 14 0-10 5-18 11-25 4 14 10 23 2 39Z" fill="#ffe35b"/>
+  <path d="M407 238h132l-14 17-34 8v15h29v16h-95v-16h30v-15l-34-8Z" fill="#111"/>
+</svg>
