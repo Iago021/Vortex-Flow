@@ -4,7 +4,7 @@
   var linkFavicon = document.querySelector('link[rel~="icon"]');
   if (linkFavicon) {
     var dentroDePaginas = location.pathname.indexOf("/paginas/") >= 0;
-    linkFavicon.href = (dentroDePaginas ? "../" : "") + "imagens/favicon.svg?v=2";
+    linkFavicon.href = (dentroDePaginas ? "../" : "") + "imagens/favicon.svg?v=3";
     linkFavicon.type = "image/svg+xml";
   }
 
@@ -207,7 +207,6 @@
     atalhoAssistente.href = "ia_especialista.html";
     atalhoAssistente.setAttribute("aria-label", "Abrir assistente");
     atalhoAssistente.setAttribute("title", "Assistente");
-    atalhoAssistente.innerHTML = svg("bot");
     document.body.appendChild(atalhoAssistente);
 
     aplicarTema(obterTemaSalvo());
