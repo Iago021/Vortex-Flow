@@ -162,3 +162,101 @@
   .grafico-resumo { grid-template-columns: 1fr; }
   .evento-conteudo { padding-left: 11px; }
 }
+
+
+/* Ajustes responsivos do novo layout */
+@media (max-width: 900px) {
+  .app-body .app-principal {
+    padding: 18px;
+  }
+
+  .app-body .app-topo,
+  .app-body .dashboard-boas-vindas {
+    gap: 14px;
+    padding-bottom: 16px;
+  }
+
+  .app-body .workspace-grade,
+  .app-body .dashboard-grade,
+  .app-body .ia-layout-novo {
+    gap: 14px;
+  }
+
+  .app-body .modulo-superficie,
+  .app-body .dashboard-card {
+    padding: 17px;
+  }
+}
+
+@media (max-width: 700px) {
+  .app-body .app-principal {
+    padding: 14px 12px 24px;
+  }
+
+  .app-body .app-topo {
+    margin-bottom: 12px;
+  }
+
+  .app-body .app-topo h1,
+  .app-body .dashboard-boas-vindas h1 {
+    font-size: 1.75rem;
+  }
+
+  .app-body .topo-acoes {
+    gap: 8px;
+  }
+
+  .app-body .topo-acoes > .app-botao {
+    flex: 1 1 150px;
+  }
+
+  .app-body .app-card {
+    border-radius: 14px;
+  }
+
+  .app-body .modulo-superficie,
+  .app-body .dashboard-card {
+    padding: 15px;
+  }
+
+  .app-body .barra-lateral {
+    border-top: 1px solid var(--app-borda);
+    border-right: 0;
+    background: color-mix(in srgb, var(--app-fundo-secundario) 94%, transparent);
+    backdrop-filter: blur(14px);
+  }
+
+  .app-body .menu-submenu {
+    border-color: var(--app-borda);
+    background: var(--app-superficie);
+  }
+
+  .app-body .modal-fundo {
+    padding: 10px;
+  }
+
+  .app-body .modal {
+    padding: 20px;
+    border-radius: 15px;
+  }
+
+  .app-body .modal .topo-acoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .app-body .tabela-dados th,
+  .app-body .tabela-dados td {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 430px) {
+  .app-body .app-principal {
+    padding-inline: 10px;
+  }
+
+  .app-body .modal .topo-acoes {
+    grid-template-columns: 1fr;
+  }
+}
