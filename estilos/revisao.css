@@ -166,6 +166,14 @@ body.modal-aberto-revisao {
   padding: 118px clamp(24px, 5vw, 72px) 46px;
 }
 
+.autenticacao-cadastro {
+  display: block;
+}
+
+.autenticacao-cadastro .cadastro-wrap {
+  margin-inline: auto;
+}
+
 .login-grade {
   width: min(1220px, 100%);
   grid-template-columns: minmax(0, 1.08fr) minmax(390px, .78fr);
