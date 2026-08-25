@@ -239,8 +239,8 @@
       }
       var registro = {};
       (configuracao.campos || []).forEach(function (campo) {
-        var controle = formulario.elements[campo.nome];
-        var valor = controle ? controle.value.trim() : "";
+        var controle = formulario.elements.namedItem(campo.nome);
+        var valor = controle && controle.value !== undefined ? String(controle.value).trim() : "";
         if (campo.tipo === "number") valor = Number(valor || 0);
         registro[campo.nome] = valor;
       });
