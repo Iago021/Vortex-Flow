@@ -1014,6 +1014,7 @@
   document.addEventListener("click", function (evento) {
     var alvo = evento.target.closest("button, a");
     if (!alvo) return;
+    if (alvo.closest("[data-modal-revisao]")) return;
 
     var botaoCalendario = alvo.closest(".calendario-navegacao button");
     if (botaoCalendario && pagina === "calendario.html") {
