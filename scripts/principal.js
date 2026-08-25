@@ -1,6 +1,13 @@
 (function () {
   "use strict";
 
+  var linkFavicon = document.querySelector('link[rel~="icon"]');
+  if (linkFavicon) {
+    var dentroDePaginas = location.pathname.indexOf("/paginas/") >= 0;
+    linkFavicon.href = (dentroDePaginas ? "../" : "") + "imagens/favicon.svg?v=2";
+    linkFavicon.type = "image/svg+xml";
+  }
+
   var icones = {
     menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
     dashboard: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
@@ -200,6 +207,7 @@
     atalhoAssistente.href = "ia_especialista.html";
     atalhoAssistente.setAttribute("aria-label", "Abrir assistente");
     atalhoAssistente.setAttribute("title", "Assistente");
+    atalhoAssistente.innerHTML = svg("bot");
     document.body.appendChild(atalhoAssistente);
 
     aplicarTema(obterTemaSalvo());
@@ -423,14 +431,166 @@
     });
   });
 
+  function normalizarFiltro(texto) {
+    return String(texto || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+  }
+
+  function paginaDoFiltro() {
+    return location.pathname.split("/").pop() || "index.html";
+  }
+
+  function linhasDoFiltro(pagina) {
+    var seletores = {
+      "produtos.html": ".produtos-workspace .tabela-dados tbody tr",
+      "ingredientes.html": ".ingredientes-workspace .tabela-dados tbody tr",
+      "estoque.html": ".estoque-workspace .tabela-dados tbody tr",
+      "financeiro.html": ".movimentacoes-financeiras tbody tr",
+      "vendas.html": ".vendas-workspace .tabela-dados tbody tr",
+      "perdas.html": ".perdas-workspace .tabela-dados tbody tr"
+    };
+    return Array.prototype.slice.call(document.querySelectorAll(seletores[pagina] || ".seletor-sem-resultados"));
+  }
+
+  function dataDaLinha(texto, anoPadrao) {
+    var encontrado = String(texto || "").match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?/);
+    if (!encontrado) return null;
+    return new Date(Number(encontrado[3] || anoPadrao || 2026), Number(encontrado[2]) - 1, Number(encontrado[1]), 12, 0, 0);
+  }
+
+  function intervaloPersonalizadoPerdas() {
+    var ferramentas = document.querySelector(".perdas-workspace") ? document.querySelector(".pagina-ferramentas") : null;
+    if (!ferramentas) return null;
+    var bloco = ferramentas.querySelector("[data-periodo-perdas]");
+    if (!bloco) {
+      bloco = document.createElement("div");
+      bloco.className = "filtro-periodo-personalizado";
+      bloco.dataset.periodoPerdas = "";
+      bloco.hidden = true;
+      bloco.innerHTML = '<label class="campo-compacto"><span>De</span><input type="date" value="2026-08-01" data-periodo-inicio></label><label class="campo-compacto"><span>Até</span><input type="date" value="2026-08-31" data-periodo-fim></label>';
+      ferramentas.appendChild(bloco);
+      bloco.querySelectorAll("input").forEach(function (campo) {
+        campo.addEventListener("change", aplicarFiltrosDaPagina);
+      });
+    }
+    return bloco;
+  }
+
+  function correspondeAoFiltro(pagina, linha, filtro, contexto) {
+    var celulas = linha.cells || [];
+    if (pagina === "produtos.html") {
+      var statusProduto = normalizarFiltro(celulas[6] ? celulas[6].textContent : "");
+      if (filtro === "disponiveis") return statusProduto.indexOf("disponivel") >= 0;
+      if (filtro === "estoque baixo") return statusProduto.indexOf("baixo") >= 0;
+      return true;
+    }
+
+    if (pagina === "ingredientes.html") {
+      var statusIngrediente = normalizarFiltro(celulas[7] ? celulas[7].textContent : "");
+      if (filtro === "estoque baixo") return statusIngrediente.indexOf("baixo") >= 0;
+      if (filtro === "proximo do vencimento") return statusIngrediente.indexOf("vence") >= 0;
+      return true;
+    }
+
+    if (pagina === "estoque.html") {
+      if (filtro === "entradas") return celulas[3] && normalizarFiltro(celulas[3].textContent) !== "—";
+      if (filtro === "saidas") return celulas[4] && normalizarFiltro(celulas[4].textContent) !== "—";
+      if (filtro === "ajustes") return celulas[8] && normalizarFiltro(celulas[8].textContent).indexOf("ajuste") >= 0;
+      return true;
+    }
+
+    if (pagina === "financeiro.html") {
+      var tipo = normalizarFiltro(celulas[1] ? celulas[1].textContent : "");
+      if (filtro === "receitas") return tipo.indexOf("receita") >= 0;
+      if (filtro === "despesas") return tipo.indexOf("despesa") >= 0 || tipo.indexOf("custo") >= 0;
+      return true;
+    }
+
+    if (pagina === "vendas.html") {
+      var horario = celulas[1] ? celulas[1].textContent.trim() : "";
+      var hora = Number(horario.split(":")[0]);
+      if (filtro === "manha" && !(hora < 12)) return false;
+      if (filtro === "tarde" && !(hora >= 12)) return false;
+      var campoDia = document.querySelector('.pagina-ferramentas input[type="date"]');
+      if (campoDia && campoDia.value) {
+        var dataLinha = linha.dataset.data || "2026-08-17";
+        if (dataLinha !== campoDia.value) return false;
+      }
+      return true;
+    }
+
+    if (pagina === "perdas.html") {
+      var data = dataDaLinha(celulas[0] ? celulas[0].textContent : "", 2026);
+      if (!data) return true;
+      if (filtro === "esta semana" && contexto.inicioSemana) return data >= contexto.inicioSemana && data <= contexto.referencia;
+      if (filtro === "este mes" && contexto.referencia) return data.getMonth() === contexto.referencia.getMonth() && data.getFullYear() === contexto.referencia.getFullYear();
+      if (filtro === "periodo personalizado") {
+        return (!contexto.inicio || data >= contexto.inicio) && (!contexto.fim || data <= contexto.fim);
+      }
+      return true;
+    }
+
+    return true;
+  }
+
+  function aplicarFiltrosDaPagina() {
+    var pagina = paginaDoFiltro();
+    var linhas = linhasDoFiltro(pagina);
+    if (!linhas.length) return;
+
+    var filtroAtivo = document.querySelector("[data-filtro].ativo");
+    var filtro = normalizarFiltro(filtroAtivo ? filtroAtivo.textContent : "");
+    var buscaCampo = document.querySelector('.pagina-ferramentas input[type="search"]');
+    var busca = normalizarFiltro(buscaCampo ? buscaCampo.value : "");
+    var contexto = {};
+
+    if (pagina === "perdas.html") {
+      var datas = linhas.map(function (linha) { return dataDaLinha(linha.cells[0] ? linha.cells[0].textContent : "", 2026); }).filter(Boolean);
+      contexto.referencia = datas.length ? new Date(Math.max.apply(null, datas.map(function (data) { return data.getTime(); }))) : new Date(2026, 7, 17, 12);
+      contexto.inicioSemana = new Date(contexto.referencia);
+      contexto.inicioSemana.setDate(contexto.referencia.getDate() - 6);
+      var blocoPeriodo = intervaloPersonalizadoPerdas();
+      if (blocoPeriodo) {
+        blocoPeriodo.hidden = filtro !== "periodo personalizado";
+        var inicioValor = blocoPeriodo.querySelector("[data-periodo-inicio]").value;
+        var fimValor = blocoPeriodo.querySelector("[data-periodo-fim]").value;
+        contexto.inicio = inicioValor ? new Date(inicioValor + "T12:00:00") : null;
+        contexto.fim = fimValor ? new Date(fimValor + "T23:59:59") : null;
+      }
+    }
+
+    var visiveis = 0;
+    linhas.forEach(function (linha) {
+      var correspondeBusca = !busca || normalizarFiltro(linha.textContent).indexOf(busca) >= 0;
+      var corresponde = correspondeBusca && correspondeAoFiltro(pagina, linha, filtro, contexto);
+      linha.hidden = !corresponde;
+      if (corresponde) visiveis += 1;
+    });
+
+    var tabela = linhas[0].closest(".tabela-dados");
+    var contador = tabela ? tabela.querySelector(".modulo-cabecalho small") : null;
+    if (contador) {
+      if (!contador.dataset.textoOriginal) contador.dataset.textoOriginal = contador.textContent;
+      contador.textContent = visiveis + (visiveis === 1 ? " registro exibido" : " registros exibidos");
+    }
+  }
+
   document.querySelectorAll("[data-filtro]").forEach(function (filtro) {
     filtro.addEventListener("click", function () {
       var grupo = filtro.parentElement;
       grupo.querySelectorAll("[data-filtro]").forEach(function (item) { item.classList.remove("ativo"); });
       filtro.classList.add("ativo");
-      mostrarAviso(filtro.closest(".desempenho-card") ? "Gráfico atualizado: " + filtro.textContent.trim() : "Filtro visual: " + filtro.textContent.trim());
+      aplicarFiltrosDaPagina();
     });
   });
+
+  document.querySelectorAll('.pagina-ferramentas input[type="search"]').forEach(function (campo) {
+    campo.addEventListener("input", aplicarFiltrosDaPagina);
+  });
+
+  var diaDasVendas = document.querySelector('.vendas-workspace') ? document.querySelector('.pagina-ferramentas input[type="date"]') : null;
+  if (diaDasVendas) diaDasVendas.addEventListener("change", aplicarFiltrosDaPagina);
+
+  aplicarFiltrosDaPagina();
 
   document.querySelectorAll("[data-telefone]").forEach(function (campo) {
     campo.addEventListener("input", function () {
@@ -818,6 +978,10 @@
   }
 
   function salvarRegistroDaAcao(acao, configuracao, registro) {
+    if (acao === "venda" && !registro.data) {
+      var campoDiaVenda = document.querySelector('.vendas-workspace') ? document.querySelector('.pagina-ferramentas input[type="date"]') : null;
+      registro.data = campoDiaVenda && campoDiaVenda.value ? campoDiaVenda.value : hojeIso();
+    }
     if (acao === "editar-item") {
       var contexto = configuracao.contexto;
       if (contexto.indice >= 0 && dadosFuncionais.itens[contexto.indice]) {
@@ -941,6 +1105,7 @@
       var custo = quantidade * custoUnitario;
       var linha = document.createElement("tr");
       linha.className = "registro-salvo";
+      linha.dataset.data = registro.data || (registro.criadoEm ? registro.criadoEm.slice(0, 10) : hojeIso());
       criarCelula(linha, "#N" + String(indice + 1).padStart(2, "0"));
       criarCelula(linha, registro.criadoEm ? new Date(registro.criadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : horaAtual());
       criarCelula(linha, registro.item);
@@ -1277,6 +1442,7 @@
     renderizarItens();
     renderizarCompromissos();
     renderizarReceitas();
+    aplicarFiltrosDaPagina();
   }
 
   renderizarDadosFuncionais();
