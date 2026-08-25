@@ -1359,3 +1359,99 @@ body.tema-escuro:not(.app-body) { --fundo: #171717; --fundo-suave: #1e1e1e; --te
 .tabela-dados tbody tr[hidden] {
   display: none !important;
 }
+
+
+/* Ajuste final de marca, hero e alinhamento */
+.marca {
+  width: 126px;
+  height: 72px;
+  justify-content: center;
+}
+
+.marca img {
+  width: 126px;
+  height: 66px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.hero-conteudo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.hero-logo {
+  width: min(500px, 94%);
+  height: auto;
+  max-height: none;
+  margin: 0 0 10px;
+  align-self: flex-start;
+  object-position: left center;
+}
+
+.hero-acoes {
+  align-items: stretch;
+}
+
+.hero-acoes .botao,
+.beneficio {
+  height: 100%;
+}
+
+.beneficio {
+  align-content: center;
+}
+
+.beneficio > div {
+  min-width: 0;
+}
+
+/* O atalho da IA fica como uma bolinha branca, sem desenho. */
+.ia-flutuante,
+.app-body .ia-flutuante {
+  color: transparent;
+  background: #fff;
+}
+
+.ia-flutuante .icone-svg {
+  display: none;
+}
+
+/* Mantém todos os ícones da barra lateral na mesma coluna. */
+@media (min-width: 1181px) {
+  .app-body .barra-menu,
+  .app-body .menu-app > a {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: center;
+    justify-content: stretch;
+    gap: 12px;
+    padding-inline: 16px;
+  }
+
+  .app-body .menu-pai {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 18px;
+    align-items: center;
+    justify-content: stretch;
+    gap: 12px;
+    padding-inline: 16px;
+  }
+
+  .app-body .barra-menu > span:first-child,
+  .app-body .menu-icone,
+  .app-body .menu-seta {
+    justify-self: center;
+  }
+
+  body.app-body.menu-recolhido .barra-menu,
+  body.app-body.menu-recolhido .menu-app > a,
+  body.app-body.menu-recolhido .menu-pai {
+    grid-template-columns: 40px;
+    justify-content: center;
+    gap: 0;
+    padding-inline: 0;
+  }
+}
