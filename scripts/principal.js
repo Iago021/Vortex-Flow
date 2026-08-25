@@ -4,7 +4,7 @@
   var linkFavicon = document.querySelector('link[rel~="icon"]');
   if (linkFavicon) {
     var dentroDePaginas = location.pathname.indexOf("/paginas/") >= 0;
-    linkFavicon.href = (dentroDePaginas ? "../" : "") + "imagens/logo_simbolo.svg?v=5";
+    linkFavicon.href = (dentroDePaginas ? "../" : "") + "imagens/logo_simbolo.svg?v=9";
     linkFavicon.type = "image/svg+xml";
   }
 
