@@ -1319,3 +1319,43 @@ body.tema-escuro:not(.app-body) { --fundo: #171717; --fundo-suave: #1e1e1e; --te
     min-height: 0;
   }
 }
+
+
+/* Correção dos ícones e controles de filtro */
+.ia-flutuante {
+  display: grid;
+  place-items: center;
+  color: var(--laranja);
+}
+
+.ia-flutuante .icone-svg {
+  width: 25px;
+  height: 25px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.app-body .ia-flutuante {
+  color: var(--laranja-2);
+}
+
+.filtro-periodo-personalizado {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  align-items: end;
+  gap: 9px;
+  margin-left: auto;
+}
+
+.filtro-periodo-personalizado[hidden] {
+  display: none !important;
+}
+
+.filtro-periodo-personalizado .campo-compacto {
+  margin: 0;
+}
+
+.tabela-dados tbody tr[hidden] {
+  display: none !important;
+}
